@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+	<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background:#0d1117;
+    color:#e6edf3;
+    margin:0;
+    padding:0;
+  }
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:'class'}</script>
+<style>
+.responsive-iframe {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+}
+.responsive-iframe iframe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+
+/* FIX FOOTER DI BAWAH */
+html, body {
+    height: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+}
+.main-content {
+    flex: 1 0 auto;
+}
+.footer {
+    flex-shrink: 0;
+}
+
+/* Style untuk sinopsis */
+.sinopsis-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-left: 4px solid #ef4444;
+}
+.dark .sinopsis-box {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    border-left: 4px solid #dc2626;
+}
+
+/* Dark Mode untuk Select Dropdown */
+select {
+    background-color: white;
+    color: #374151;
+}
+.dark select {
+    background-color: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+}
+select:focus {
+    outline: none;
+    border-color: #ef4444;
+    ring: 2px;
+    ring-color: #ef4444;
+}
+.dark select:focus {
+    border-color: #ef4444;
+    ring-color: #ef4444;
+}
+
+/* Smooth transitions untuk semua elemen */
+.bg-white, .bg-gray-100, .bg-gray-50, .bg-yellow-50, .bg-blue-50, .bg-green-100 {
+    transition: background-color 0.3s ease;
+}
+.dark .bg-white { background-color: #374151; }
+.dark .bg-gray-100 { background-color: #4b5563; }
+.dark .bg-gray-50 { background-color: #374151; }
+.dark .bg-yellow-50 { background-color: #78350f; }
+.dark .bg-blue-50 { background-color: #1e3a8a; }
+.dark .bg-green-100 { background-color: #064e3b; }
+
+.text-gray-700, .text-gray-600, .text-gray-500, .text-gray-800, .text-gray-900 {
+    transition: color 0.3s ease;
+}
+.dark .text-gray-700 { color: #d1d5db; }
+.dark .text-gray-600 { color: #9ca3af; }
+.dark .text-gray-500 { color: #6b7280; }
+.dark .text-gray-800 { color: #e5e7eb; }
+.dark .text-gray-900 { color: #f9fafb; }
+
+.border-gray-200, .border-gray-300 {
+    transition: border-color 0.3s ease;
+}
+.dark .border-gray-200 { border-color: #4b5563; }
+.dark .border-gray-300 { border-color: #6b7280; }
+</style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col min-h-screen">
+
+<div class="container mx-auto px-3 py-4 main-content">
+
+<!-- Header Simple -->
+<header class="flex justify-between items-center mb-6">
+  <a href="/" class="text-2xl font-bold text-red-600 dark:text-red-500">OPPADRAMA</a>
+  <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">🌙</button>
+</header>
+
+<!-- JUDUL FILM/SERIES -->
+<div class="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow text-center">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ detail.title }}</h1>
+  
+  <!-- SINOSIS SECTION -->
+  {% if detail.sinopsis %}
+  <div class="mt-4 text-left sinopsis-box rounded-lg p-4">
+    <h3 class="font-semibold text-gray-700 dark:text-gray-300 mb-3 text-lg">Sinopsis:</h3>
+    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed text-justify">
+      {{ detail.sinopsis }}
+    </p>
+  </div>
+  {% else %}
+  <div class="mt-4 text-left bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
+    <p class="text-sm text-blue-600 dark:text-blue-300 text-center">
+      ⚠️ Sinopsis tidak tersedia untuk konten ini
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- VIDEO PLAYER - DROPDOWN ONLY WITH DARK MODE -->
+{% if detail.videos and (detail.is_episode or detail.is_movie) %}
+<div class="mb-6">
+  <!-- Video Player -->
+  <div class="bg-black rounded-lg overflow-hidden shadow-lg">
+    <div class="responsive-iframe">
+      <iframe 
+        id="player" 
+        src="{% if detail.videos %}{{ detail.videos[0].url }}{% endif %}" 
+        allowfullscreen
+        frameborder="0"
+        onload="onVideoLoad()"
+        onerror="onVideoError()"
+      ></iframe>
+    </div>
+  </div>
+
+<!-- Server Selection + Episode Navigation -->
+<div class="mt-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+  <div class="flex flex-col gap-4">
+    <!-- Baris 1: Pilih Server -->
+    <div class="flex items-center gap-4">
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Pilih Server:</span>
+      <select onchange="switchVideoFromSelect(this)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm w-48 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors">
+        {% for v in detail.videos %}
+        <option value="{{ v.url }}" data-provider="{{ v.provider }}" {% if loop.first %}selected{% endif %}>
+          {{ v.provider }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <!-- Baris 2: Server Aktif + Episode Navigation -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <!-- Server Aktif -->
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Server aktif:</span>
+        <span id="current-server" class="text-green-600 dark:text-green-400 text-sm font-medium">
+          {{ detail.videos[0].provider if detail.videos else 'Default' }}
+        </span>
+      </div>
+      
+      <!-- Episode Navigation -->
+      {% if detail.all_episodes and detail.all_episodes|length > 0 and detail.is_episode and detail.current_index >= 0 %}
+      <div class="flex items-center gap-3">
+        <!-- Episode Info -->
+        <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+          Episode {{ detail.current_index + 1 }} dari {{ detail.all_episodes|length }}
+        </span>
+        
+        <!-- Prev/Next Buttons - WARNA MERAH -->
+        <div class="flex gap-2">
+          {% if detail.current_index > 0 %}
+            <a href="/drama?slug={{ detail.all_episodes[detail.current_index - 1].link }}" 
+               class="px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors font-medium">
+               Prev
+            </a>
+          {% else %}
+            <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded text-sm">
+               Prev
+            </span>
+          {% endif %}
+          
+          {% if detail.current_index < detail.all_episodes|length - 1 %}
+            <a href="/drama?slug={{ detail.all_episodes[detail.current_index + 1].link }}" 
+               class="px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors font-medium">
+              Next
+            </a>
+          {% else %}
+            <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded text-sm">
+              Next
+            </span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+let currentVideoUrl = '{% if detail.videos %}{{ detail.videos[0].url }}{% endif %}';
+let currentProvider = '{% if detail.videos %}{{ detail.videos[0].provider }}{% else %}Default{% endif %}';
+
+function switchVideoFromSelect(select) {
+  const selectedOption = select.options[select.selectedIndex];
+  const url = selectedOption.value;
+  const provider = selectedOption.getAttribute('data-provider');
+  
+  currentVideoUrl = url;
+  currentProvider = provider;
+  
+  // Show loading state
+  const player = document.getElementById('player');
+  player.style.opacity = '0.7';
+  
+  // Update server info
+  document.getElementById('current-server').textContent = provider;
+  
+  // Update video source
+  player.src = url;
+  
+  // Hide fallback
+  document.getElementById('video-fallback').classList.add('hidden');
+  
+  // Restore opacity setelah video load
+  setTimeout(() => {
+    player.style.opacity = '1';
+  }, 1000);
+}
+
+function onVideoLoad() {
+  console.log('Video loaded successfully');
+  document.getElementById('player').style.opacity = '1';
+  document.getElementById('video-fallback').classList.add('hidden');
+}
+
+function onVideoError() {
+  console.log('Video failed to load');
+  document.getElementById('player').style.opacity = '1';
+  document.getElementById('video-fallback').classList.remove('hidden');
+}
+</script>
+{% endif %}
+
+
+
+
+
+
+
+<!-- DOWNLOAD SECTION - RAPIH -->
+{% if detail.downloads and (detail.is_episode or detail.is_movie) %}
+<div class="mb-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+    <div class="grid gap-3">
+      {% for dl in detail.downloads %}
+      <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+        <div class="flex items-center gap-3">
+          <!-- Server Icon -->
+          <div class="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+          <span class="text-red-600 dark:text-red-400 text-sm font-bold">DL</span>
+          </div>
+          <div>
+            <span class="font-medium text-gray-700 dark:text-gray-300 text-sm">
+              {{ dl.text.split(' ')[0] }} <!-- Ambil nama server saja -->
+            </span>
+            <span class="text-gray-500 dark:text-gray-400 text-xs block mt-1">
+              {% if 'FHD' in dl.text or '1080p' in dl.text %}
+                🟢 FHD 1080p
+              {% elif 'HD' in dl.text or '720p' in dl.text %}
+                🔵 HD 720p  
+              {% elif 'SD' in dl.text or '480p' in dl.text %}
+                🟡 SD 480p
+              {% elif '360p' in dl.text %}
+                ⚪ SD 360p
+              {% else %}
+                📥 Download
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        <a href="{{ dl.url }}" target="_blank" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors">
+          Download
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- EPISODE LIST -->
+{% if detail.episodes and detail.episodes|length > 0 and detail.is_series_overview %}
+<div class="mb-4">
+  <h2 class="font-bold mb-2 text-lg text-gray-900 dark:text-white">Episode List</h2>
+  <div class="grid gap-1">
+    {% for ep in detail.episodes %}
+    <a href="/drama?slug={{ ep.link }}" 
+       class="px-3 py-2 bg-white dark:bg-gray-800 rounded hover:bg-red-600 hover:text-white text-sm transition-colors {% if current_slug == ep.link %}bg-red-600 text-white{% endif %}">
+      {{ ep.num }} - {{ ep.title }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- NAVIGATION BUTTONS -->
+<div class="flex gap-2 mb-6">
+  <a href="/" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"> Kembali ke Home</a>
+  {% if detail.series_link and not detail.is_movie and detail.is_episode %}
+  <a href="/drama?slug={{ detail.series_link }}" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 text-sm font-medium"> Lihat Semua Episode</a>
+  {% endif %}
+</div>
+
+</div> <!-- end main-content -->
+
+<!-- FOOTER YANG SELALU DI BAWAH -->
+<footer class="mt-12 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
+  OppaDrama &copy; 2025 | Made with ♥️ by VaL
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('toggle-dark');
+  if(localStorage.getItem('theme') === 'dark'){
+    document.documentElement.classList.add('dark');
+    btn.textContent = '☀️';
+  } else {
+    btn.textContent = '🌙';
+  }
+  btn.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    if(document.documentElement.classList.contains('dark')){
+      localStorage.setItem('theme','dark');
+      btn.textContent = '☀️';
+    } else {
+      localStorage.setItem('theme','light');
+      btn.textContent = '🌙';
+    }
+  });
+});
+</script>
+</body>
+</html>
