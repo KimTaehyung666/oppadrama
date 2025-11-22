@@ -200,6 +200,50 @@ def get_all_episodes_from_series(slug):
     except: pass
     return episodes
 
+
+@cache.memoize(timeout=300)
+def get_ongoing_dramas():
+    """Mendapatkan list drama yang sedang tayang"""
+    try:
+        url = BASE_URL
+        r = requests.get(url, headers=HEADERS, timeout=10)
+        if r.status_code != 200:
+            return []
+        
+        soup = BeautifulSoup(r.text, "html.parser")
+        ongoing_section = soup.select_one(".ongoingseries")
+        
+        if not ongoing_section:
+            return []
+        
+        ongoing_dramas = []
+        for li in ongoing_section.select("li"):
+            a = li.find("a", href=True)
+            if not a:
+                continue
+                
+            title_span = li.select_one(".l")
+            episode_span = li.select_one(".r")
+            
+            if title_span and episode_span:
+                # Bersihkan judul dari icon
+                title_text = title_span.text.strip()
+                if "›" in title_text:
+                    title_text = title_text.split("›", 1)[1].strip()
+                
+                drama_data = {
+                    "title": title_text,
+                    "episode": episode_span.text.strip(),
+                    "link": urlparse(a["href"]).path.lstrip("/")
+                }
+                ongoing_dramas.append(drama_data)
+        
+        return ongoing_dramas[:10]  # Limit to 10 items
+        
+    except Exception as e:
+        print(f"Error getting ongoing dramas: {e}")
+        return []
+
 @cache.memoize(timeout=300)
 def get_drama_detail(slug):
     url = urljoin(BASE_URL + "/", slug)
@@ -216,6 +260,66 @@ def get_drama_detail(slug):
     soup = BeautifulSoup(r.text, "html.parser")
     title_tag = soup.find("h1", class_="entry-title")
     title = title_tag.text.strip() if title_tag else "Tanpa Judul"
+
+    # Get alternative titles
+    alter_title = ""
+    alter_tag = soup.find("span", class_="alter")
+    if alter_tag:
+        alter_title = alter_tag.text.strip()
+
+    # Get rating
+    rating = "0.0"
+    rating_tag = soup.find("strong", string=lambda x: x and "Rating" in x)
+    if rating_tag:
+        rating_text = rating_tag.text.strip()
+        rating_match = re.search(r'Rating\s*([\d.]+)', rating_text)
+        if rating_match:
+            rating = rating_match.group(1)
+
+    # Get drama info
+    drama_info = {
+        "status": "",
+        "network": "",
+        "released": "",
+        "duration": "",
+        "country": "",
+        "type": "",
+        "episodes": "",
+        "director": "",
+        "cast": "",
+        "genres": []
+    }
+
+    # Extract info from .spe section
+    spe_section = soup.select_one(".spe")
+    if spe_section:
+        spans = spe_section.find_all("span")
+        for span in spans:
+            text = span.get_text().strip()
+            if "Status:" in text:
+                drama_info["status"] = text.replace("Status:", "").strip()
+            elif "Network:" in text:
+                drama_info["network"] = re.sub(r'<a[^>]*>|</a>', '', text).replace("Network:", "").strip()
+            elif "Dirilis:" in text:
+                drama_info["released"] = text.replace("Dirilis:", "").strip()
+            elif "Durasi:" in text:
+                drama_info["duration"] = text.replace("Durasi:", "").strip()
+            elif "Negara:" in text:
+                drama_info["country"] = re.sub(r'<a[^>]*>|</a>', '', text).replace("Negara:", "").strip()
+            elif "Tipe:" in text:
+                drama_info["type"] = text.replace("Tipe:", "").strip()
+            elif "Episode:" in text:
+                drama_info["episodes"] = text.replace("Episode:", "").strip()
+            elif "Sutradara:" in text:
+                drama_info["director"] = re.sub(r'<a[^>]*>|</a>', '', text).replace("Sutradara:", "").strip()
+            elif "Artis:" in text:
+                drama_info["cast"] = re.sub(r'<a[^>]*>|</a>', '', text).replace("Artis:", "").strip()
+
+    # Get genres
+    genxed_section = soup.select_one(".genxed")
+    if genxed_section:
+        genre_links = genxed_section.find_all("a", href=True)
+        drama_info["genres"] = [link.text.strip() for link in genre_links]
 
     sinopsis = ""
     sinopsis_selectors = [".desc.mindes", ".entry-content p", ".bixbox.infx p", ".wp-block-paragraph", ".sinopsis"]
@@ -327,6 +431,9 @@ def get_drama_detail(slug):
 
     return {
         "title": title, 
+        "alter_title": alter_title,
+        "rating": rating,
+        "info": drama_info,
         "sinopsis": sinopsis,
         "videos": videos, 
         "downloads": downloads, 
@@ -348,6 +455,9 @@ def index():
     country = request.args.get("country", "")
     category = request.args.get("category", "")
     per_page = 12
+
+    # Get ongoing dramas
+    ongoing_dramas = get_ongoing_dramas()
 
     if country or category:
         dramas_all = get_dramas_by_filter(country=country, category=category, page=page)
@@ -379,6 +489,7 @@ def index():
                          category=category,
                          countries=COUNTRIES,
                          categories=CATEGORIES,
+                         ongoing_dramas=ongoing_dramas,
                          title="OppaDrama")
 
 @app.route("/drama")

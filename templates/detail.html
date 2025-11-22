@@ -104,6 +104,28 @@ select:focus {
 }
 .dark .border-gray-200 { border-color: #4b5563; }
 .dark .border-gray-300 { border-color: #6b7280; }
+
+/* Custom scrollbar untuk dropdown */
+.dropdown-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.dropdown-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.dropdown-scroll::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+.dropdown-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+.dark .dropdown-scroll::-webkit-scrollbar-track {
+    background: #374151;
+}
+.dark .dropdown-scroll::-webkit-scrollbar-thumb {
+    background: #6b7280;
+}
 </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col min-h-screen">
@@ -113,12 +135,34 @@ select:focus {
 <!-- Header Simple -->
 <header class="flex justify-between items-center mb-6">
   <a href="/" class="text-2xl font-bold text-red-600 dark:text-red-500">OPPADRAMA</a>
-  <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">🌙</button>
+  <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm"></button>
 </header>
+
+
 
 <!-- JUDUL FILM/SERIES -->
 <div class="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow text-center">
   <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ detail.title }}</h1>
+  
+  <!-- Alternative Title -->
+  {% if detail.alter_title %}
+  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 italic">
+    {{ detail.alter_title }}
+  </p>
+  {% endif %}
+  
+  <!-- Rating -->
+  {% if detail.rating and detail.rating != "0.0" %}
+  <div class="flex items-center justify-center gap-2 mb-4">
+    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Rating:</span>
+    <div class="flex items-center gap-1">
+      <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+      </svg>
+      <span class="text-sm font-bold text-gray-900 dark:text-white">{{ detail.rating }}/10</span>
+    </div>
+  </div>
+  {% endif %}
   
   <!-- SINOSIS SECTION -->
   {% if detail.sinopsis %}
@@ -136,6 +180,113 @@ select:focus {
   </div>
   {% endif %}
 </div>
+
+<!-- DRAMA INFO DETAIL SECTION -->
+{% if detail.info %}
+<div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+  <h3 class="font-semibold text-gray-900 dark:text-white mb-4 text-lg border-b border-gray-200 dark:border-gray-700 pb-2">
+    Informasi Detail
+  </h3>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Kolom 1 -->
+    <div class="space-y-3">
+      {% if detail.info.status %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Status:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">
+          {% if "Ongoing" in detail.info.status %}
+            <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded text-xs font-medium">🟡 {{ detail.info.status }}</span>
+          {% elif "Completed" in detail.info.status %}
+            <span class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs font-medium">🟢 {{ detail.info.status }}</span>
+          {% else %}
+            {{ detail.info.status }}
+          {% endif %}
+        </span>
+      </div>
+      {% endif %}
+      
+      {% if detail.info.network %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Network:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.network }}</span>
+      </div>
+      {% endif %}
+      
+      {% if detail.info.released %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Dirilis:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.released }}</span>
+      </div>
+      {% endif %}
+      
+      {% if detail.info.duration %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Durasi:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.duration }}</span>
+      </div>
+      {% endif %}
+    </div>
+    
+    <!-- Kolom 2 -->
+    <div class="space-y-3">
+      {% if detail.info.country %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Negara:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.country }}</span>
+      </div>
+      {% endif %}
+      
+      {% if detail.info.type %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Tipe:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.type }}</span>
+      </div>
+      {% endif %}
+      
+      {% if detail.info.episodes %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Episode:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.episodes }}</span>
+      </div>
+      {% endif %}
+      
+      {% if detail.info.director %}
+      <div class="flex">
+        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Sutradara:</span>
+        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.director }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <!-- Cast -->
+  {% if detail.info.cast %}
+  <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <div class="flex">
+      <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Pemeran:</span>
+      <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.cast }}</span>
+    </div>
+  </div>
+  {% endif %}
+  
+  <!-- Genres -->
+  {% if detail.info.genres %}
+  <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <div class="flex flex-col sm:flex-row sm:items-start">
+      <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">Genre:</span>
+      <div class="flex-1 flex flex-wrap gap-2">
+        {% for genre in detail.info.genres %}
+        <span class="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-full text-xs font-medium">
+          {{ genre }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
 
 <!-- VIDEO PLAYER - DROPDOWN ONLY WITH DARK MODE -->
 {% if detail.videos and (detail.is_episode or detail.is_movie) %}
@@ -157,16 +308,41 @@ select:focus {
 <!-- Server Selection + Episode Navigation -->
 <div class="mt-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
   <div class="flex flex-col gap-4">
-    <!-- Baris 1: Pilih Server -->
+    <!-- Baris 1: Pilih Server - DROPDOWN STYLE BARU -->
     <div class="flex items-center gap-4">
       <span class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Pilih Server:</span>
-      <select onchange="switchVideoFromSelect(this)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm w-48 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors">
-        {% for v in detail.videos %}
-        <option value="{{ v.url }}" data-provider="{{ v.provider }}" {% if loop.first %}selected{% endif %}>
-          {{ v.provider }}
-        </option>
-        {% endfor %}
-      </select>
+      
+      <!-- Dropdown Server -->
+      <div class="relative">
+        <button type="button" id="server-dropdown-btn" 
+                class="w-48 px-4 py-2 text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-red-500 transition-colors flex items-center justify-between">
+          <span class="text-sm" id="selected-server">
+            {% if detail.videos %}
+              {{ detail.videos[0].provider }}
+            {% else %}
+              Default
+            {% endif %}
+          </span>
+          <svg class="w-4 h-4 ml-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <!-- Dropdown Content -->
+        <div id="server-dropdown" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 hidden">
+          <div class="p-2 dropdown-scroll max-h-40">
+            {% for v in detail.videos %}
+            <button type="button" 
+                    class="w-full text-left px-3 py-2 text-sm rounded hover:bg-red-600 hover:text-white transition-colors {% if loop.first %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}"
+                    data-url="{{ v.url }}" 
+                    data-provider="{{ v.provider }}"
+                    onclick="switchVideoFromButton(this)">
+              {{ v.provider }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- Baris 2: Server Aktif + Episode Navigation -->
@@ -221,20 +397,42 @@ select:focus {
 let currentVideoUrl = '{% if detail.videos %}{{ detail.videos[0].url }}{% endif %}';
 let currentProvider = '{% if detail.videos %}{{ detail.videos[0].provider }}{% else %}Default{% endif %}';
 
-function switchVideoFromSelect(select) {
-  const selectedOption = select.options[select.selectedIndex];
-  const url = selectedOption.value;
-  const provider = selectedOption.getAttribute('data-provider');
+// Dropdown functionality untuk server
+const serverDropdownBtn = document.getElementById('server-dropdown-btn');
+const serverDropdown = document.getElementById('server-dropdown');
+
+serverDropdownBtn.addEventListener('click', () => {
+  serverDropdown.classList.toggle('hidden');
+  const svg = serverDropdownBtn.querySelector('svg');
+  svg.classList.toggle('rotate-180');
+});
+
+// Close dropdown ketika klik outside
+document.addEventListener('click', (e) => {
+  if (!serverDropdownBtn.contains(e.target) && !serverDropdown.contains(e.target)) {
+    serverDropdown.classList.add('hidden');
+    serverDropdownBtn.querySelector('svg').classList.remove('rotate-180');
+  }
+});
+
+function switchVideoFromButton(button) {
+  const url = button.getAttribute('data-url');
+  const provider = button.getAttribute('data-provider');
   
   currentVideoUrl = url;
   currentProvider = provider;
   
+  // Update tampilan dropdown
+  document.getElementById('selected-server').textContent = provider;
+  document.getElementById('current-server').textContent = provider;
+  
+  // Close dropdown
+  serverDropdown.classList.add('hidden');
+  serverDropdownBtn.querySelector('svg').classList.remove('rotate-180');
+  
   // Show loading state
   const player = document.getElementById('player');
   player.style.opacity = '0.7';
-  
-  // Update server info
-  document.getElementById('current-server').textContent = provider;
   
   // Update video source
   player.src = url;
@@ -262,12 +460,6 @@ function onVideoError() {
 </script>
 {% endif %}
 
-
-
-
-
-
-
 <!-- DOWNLOAD SECTION - RAPIH -->
 {% if detail.downloads and (detail.is_episode or detail.is_movie) %}
 <div class="mb-4">
@@ -286,15 +478,15 @@ function onVideoError() {
             </span>
             <span class="text-gray-500 dark:text-gray-400 text-xs block mt-1">
               {% if 'FHD' in dl.text or '1080p' in dl.text %}
-                🟢 FHD 1080p
+                 FHD 1080p
               {% elif 'HD' in dl.text or '720p' in dl.text %}
-                🔵 HD 720p  
+                 HD 720p  
               {% elif 'SD' in dl.text or '480p' in dl.text %}
-                🟡 SD 480p
+                 SD 480p
               {% elif '360p' in dl.text %}
-                ⚪ SD 360p
+                 SD 360p
               {% else %}
-                📥 Download
+                 Download
               {% endif %}
             </span>
           </div>
@@ -336,7 +528,7 @@ function onVideoError() {
 
 <!-- FOOTER YANG SELALU DI BAWAH -->
 <footer class="mt-12 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
-  OppaDrama &copy; 2025 | Made with ♥️ by VaL
+  OppaDrama &copy; 2025 | Made with  by VaL
 </footer>
 
 <script>
@@ -344,18 +536,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('toggle-dark');
   if(localStorage.getItem('theme') === 'dark'){
     document.documentElement.classList.add('dark');
-    btn.textContent = '☀️';
+    btn.textContent = '';
   } else {
-    btn.textContent = '🌙';
+    btn.textContent = '';
   }
   btn.addEventListener('click', () => {
     document.documentElement.classList.toggle('dark');
     if(document.documentElement.classList.contains('dark')){
       localStorage.setItem('theme','dark');
-      btn.textContent = '☀️';
+      btn.textContent = '';
     } else {
       localStorage.setItem('theme','light');
-      btn.textContent = '🌙';
+      btn.textContent = '';
     }
   });
 });

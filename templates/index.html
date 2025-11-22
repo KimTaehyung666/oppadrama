@@ -31,6 +31,22 @@
         .dark .dropdown-scroll::-webkit-scrollbar-thumb {
             background: #6b7280;
         }
+
+        /* Animation untuk modal */
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-animate {
+            animation: slideInDown 0.3s ease-out;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -39,8 +55,77 @@
 <!-- Header -->
 <header class="flex justify-between items-center mb-6">
   <a href="/" class="text-2xl font-bold text-red-600 dark:text-red-500 whitespace-nowrap">OPPADRAMA</a>
-  <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm transition-colors">🌙</button>
+  <div class="flex items-center gap-2">
+    <!-- Button Sedang Tayang - WARNA MERAH -->
+    <button id="ongoing-btn" class="px-3 py-1 bg-red-600 text-white rounded text-sm transition-colors hover:bg-red-700 flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      Sedang Tayang
+    </button>
+    <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm transition-colors">🌙</button>
+  </div>
 </header>
+
+<!-- Modal Sedang Tayang -->
+<div id="ongoing-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md modal-animate">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Drama Sedang Tayang
+        </h3>
+        <button id="close-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Modal Content -->
+      <div class="p-4">
+        <div class="space-y-2 max-h-96 overflow-y-auto dropdown-scroll">
+          {% if ongoing_dramas %}
+            {% for drama in ongoing_dramas %}
+            <a href="/drama?slug={{ drama.link }}" 
+               class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 group transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span class="font-medium text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 text-sm">
+                  {{ drama.title }}
+                </span>
+              </div>
+              <span class="px-2 py-1 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-300 rounded text-xs font-medium">
+                {{ drama.episode }}
+              </span>
+            </a>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-8">
+              <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">Tidak ada drama yang sedang tayang</p>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Modal Footer -->
+        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            Update otomatis setiap 5 menit
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Search Bar -->
 <form method="get" action="/" class="flex gap-2 mb-4">
@@ -217,17 +302,13 @@
       </span>
       {% endif %}
       <a href="/" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-        ✕ Clear
+         Clear
       </a>
     </div>
   </div>
   {% endif %}
 
 </div>
-
-
-
-
 
 <!-- Grid Drama -->
 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
@@ -262,7 +343,7 @@
 </div>
 
 <footer class="mt-12 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
-  OppaDrama &copy; 2025 | Made with ♥️ by VaL
+  OppaDrama &copy; 2025 | Made with  by VaL
 </footer>
 
 </div>
@@ -286,15 +367,42 @@
     }
   });
 
+  // Modal functionality untuk Sedang Tayang
+  const ongoingBtn = document.getElementById('ongoing-btn');
+  const ongoingModal = document.getElementById('ongoing-modal');
+  const closeModal = document.getElementById('close-modal');
+
+  ongoingBtn.addEventListener('click', () => {
+    ongoingModal.classList.remove('hidden');
+  });
+
+  closeModal.addEventListener('click', () => {
+    ongoingModal.classList.add('hidden');
+  });
+
+  // Close modal when clicking outside
+  ongoingModal.addEventListener('click', (e) => {
+    if (e.target === ongoingModal) {
+      ongoingModal.classList.add('hidden');
+    }
+  });
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !ongoingModal.classList.contains('hidden')) {
+      ongoingModal.classList.add('hidden');
+    }
+  });
+
   // Dark mode functionality
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('toggle-dark');
     if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
-      btn.textContent = '☀️';
+      btn.textContent = '';
     } else {
       document.documentElement.classList.remove('dark');
-      btn.textContent = '🌙';
+      btn.textContent = '';
     }
     
     btn.addEventListener('click', () => {
@@ -302,10 +410,10 @@
       document.documentElement.classList.toggle('dark');
       if(document.documentElement.classList.contains('dark')){
         localStorage.setItem('theme','dark');
-        btn.textContent = '☀️';
+        btn.textContent = '';
       } else {
         localStorage.setItem('theme','light');
-        btn.textContent = '🌙';
+        btn.textContent = '';
       }
       setTimeout(() => { document.documentElement.style.transition = ''; }, 300);
     });
