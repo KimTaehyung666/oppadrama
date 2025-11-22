@@ -459,26 +459,32 @@ def index():
     # Get ongoing dramas
     ongoing_dramas = get_ongoing_dramas()
 
+    dramas_all = []
+    total = 0
+    pages = 1
+
     if country or category:
+        # Filter by country/category
         dramas_all = get_dramas_by_filter(country=country, category=category, page=page)
-        total = len(dramas_all)
-        pages = math.ceil(total / per_page) if total > 0 else 1
-        dramas_paginated = dramas_all
     elif q:
+        # Search
         dramas_all = search_drama(q)
-        total = len(dramas_all)
-        pages = math.ceil(total / per_page) if total > 0 else 1
-        dramas_paginated = dramas_all[(page - 1) * per_page : page * per_page]
     else:
+        # All dramas
         dramas_all = get_drama_list_all()
-        total = len(dramas_all)
-        pages = math.ceil(total / per_page) if total > 0 else 1
-        dramas_paginated = dramas_all[(page - 1) * per_page : page * per_page]
-    
+
+    # Apply type filter
     if filter_type == "movie":
-        dramas_paginated = [d for d in dramas_paginated if d['type'] == 'movie']
+        dramas_all = [d for d in dramas_all if d.get('type') == 'movie']
     elif filter_type == "series":
-        dramas_paginated = [d for d in dramas_paginated if d['type'] == 'series']
+        dramas_all = [d for d in dramas_all if d.get('type') == 'series']
+
+    # Pagination
+    total = len(dramas_all)
+    pages = math.ceil(total / per_page) if total > 0 else 1
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    dramas_paginated = dramas_all[start_idx:end_idx]
 
     return render_template("index.html", 
                          dramas=dramas_paginated, 
