@@ -343,7 +343,7 @@
 </div>
 
 <footer class="mt-12 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
-  OppaDrama &copy; 2025 | Made with  by VaL
+  OppaDrama &copy; 2025 | Made with ♥️ by VaL
 </footer>
 
 </div>
@@ -399,10 +399,10 @@
     const btn = document.getElementById('toggle-dark');
     if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
-      btn.textContent = '';
+      btn.textContent = '☀️';
     } else {
       document.documentElement.classList.remove('dark');
-      btn.textContent = '';
+      btn.textContent = '🌙';
     }
     
     btn.addEventListener('click', () => {
@@ -410,10 +410,10 @@
       document.documentElement.classList.toggle('dark');
       if(document.documentElement.classList.contains('dark')){
         localStorage.setItem('theme','dark');
-        btn.textContent = '';
+        btn.textContent = '☀️';
       } else {
         localStorage.setItem('theme','light');
-        btn.textContent = '';
+        btn.textContent = '🌙';
       }
       setTimeout(() => { document.documentElement.style.transition = ''; }, 300);
     });

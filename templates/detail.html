@@ -135,7 +135,7 @@ select:focus {
 <!-- Header Simple -->
 <header class="flex justify-between items-center mb-6">
   <a href="/" class="text-2xl font-bold text-red-600 dark:text-red-500">OPPADRAMA</a>
-  <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm"></button>
+  <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">☀️</button>
 </header>
 
 
@@ -536,18 +536,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('toggle-dark');
   if(localStorage.getItem('theme') === 'dark'){
     document.documentElement.classList.add('dark');
-    btn.textContent = '';
+    btn.textContent = '☀️';
   } else {
-    btn.textContent = '';
+    btn.textContent = '🌙';
   }
   btn.addEventListener('click', () => {
     document.documentElement.classList.toggle('dark');
     if(document.documentElement.classList.contains('dark')){
       localStorage.setItem('theme','dark');
-      btn.textContent = '';
+      btn.textContent = '☀️';
     } else {
       localStorage.setItem('theme','light');
-      btn.textContent = '';
+      btn.textContent = '🌙';
     }
   });
 });
