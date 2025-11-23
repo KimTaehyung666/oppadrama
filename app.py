@@ -32,16 +32,18 @@ CATEGORIES = {
     'animation': 'Animasi'
 }
 
-
 @cache.memoize(timeout=300)
-def get_drama_list_all():
-    dramas = []
-    for page_num in range(1, 6):
-        url = f"{BASE_URL}/page/{page_num}/"
-        r = requests.get(url, headers=HEADERS)
-        if r.status_code != 200: break
+def scrape_single_page(page_num):
+    """Scrape SINGLE PAGE saja - sangat ringan"""
+    url = f"{BASE_URL}/page/{page_num}/"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=5)
+        if r.status_code != 200: 
+            return []
+        
         soup = BeautifulSoup(r.text, "html.parser")
-        new_count = 0
+        dramas = []
+        
         for a in soup.find_all("a", href=True):
             title = a.get("title")
             eps = a.find("span", class_="epx")
@@ -58,37 +60,103 @@ def get_drama_list_all():
                     "link": slug,
                     "type": "movie" if is_movie else "series"
                 })
-                new_count += 1
-        if new_count == 0: break
+        
+        print(f"📄 Scraped page {page_num}: {len(dramas)} dramas")
+        return dramas
+        
+    except Exception as e:
+        print(f"❌ Error scraping page {page_num}: {e}")
+        return []
+
+@cache.memoize(timeout=300)
+def scrape_movies_only(page_num):
+    """Scrape khusus FILM saja - handle pagination untuk film"""
+    dramas = []
+    start_page = (page_num - 1) * 3 + 1  # 3 page per pagination
+    pages_to_scrape = 3
+    
+    for current_page in range(start_page, start_page + pages_to_scrape):
+        url = f"{BASE_URL}/page/{current_page}/"
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=5)
+            if r.status_code != 200: 
+                continue
+            
+            soup = BeautifulSoup(r.text, "html.parser")
+            
+            for a in soup.find_all("a", href=True):
+                title = a.get("title")
+                eps = a.find("span", class_="epx")
+                jam = a.find("div", class_="timeago")
+                thumb = a.find("img")
+                
+                if title and eps and jam:
+                    slug = urlparse(a["href"]).path.lstrip("/")
+                    # FILTER: hanya ambil yang movie
+                    if is_movie_content(slug):
+                        dramas.append({
+                            "title": title.strip(),
+                            "eps": eps.text.strip(),
+                            "jam": jam.text.strip(),
+                            "thumb": thumb["src"] if thumb else "",
+                            "link": slug,
+                            "type": "movie"
+                        })
+            
+            print(f"🎬 Movie search page {current_page}: Found {len(dramas)} movies")
+            
+        except Exception as e:
+            print(f"❌ Error scraping movie page {current_page}: {e}")
+            continue
+    
+    return dramas
+
+@cache.memoize(timeout=300) 
+def scrape_series_only(page_num):
+    """Scrape khusus SERIES saja - handle pagination untuk series"""
+    dramas = []
+    start_page = (page_num - 1) * 2 + 1  # 2 page per pagination
+    pages_to_scrape = 2
+    
+    for current_page in range(start_page, start_page + pages_to_scrape):
+        url = f"{BASE_URL}/page/{current_page}/"
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=5)
+            if r.status_code != 200: 
+                continue
+            
+            soup = BeautifulSoup(r.text, "html.parser")
+            
+            for a in soup.find_all("a", href=True):
+                title = a.get("title")
+                eps = a.find("span", class_="epx")
+                jam = a.find("div", class_="timeago")
+                thumb = a.find("img")
+                
+                if title and eps and jam:
+                    slug = urlparse(a["href"]).path.lstrip("/")
+                    # FILTER: hanya ambil yang series (bukan movie)
+                    if not is_movie_content(slug):
+                        dramas.append({
+                            "title": title.strip(),
+                            "eps": eps.text.strip(),
+                            "jam": jam.text.strip(),
+                            "thumb": thumb["src"] if thumb else "",
+                            "link": slug,
+                            "type": "series"
+                        })
+            
+            print(f"📺 Series search page {current_page}: Found {len(dramas)} series")
+            
+        except Exception as e:
+            print(f"❌ Error scraping series page {current_page}: {e}")
+            continue
+    
     return dramas
 
 @cache.memoize(timeout=300)
-def search_drama(query):
-    url = f"{BASE_URL}/?s={query}"
-    r = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(r.text, "html.parser")
-    results = []
-    for article in soup.select("article.bs"):
-        a = article.select_one("a.tip")
-        if not a: continue
-        title = a.get("title") or a.text.strip()
-        thumb = article.select_one("img")
-        eps = article.select_one(".epx")
-        slug = urlparse(a["href"]).path.lstrip("/")
-        is_movie = is_movie_content(slug)
-        results.append({
-            "title": title.strip(),
-            "eps": eps.text.strip() if eps else "",
-            "jam": "",
-            "thumb": thumb["src"] if thumb else "",
-            "link": slug,
-            "type": "movie" if is_movie else "series"
-        })
-    return results
-
-@cache.memoize(timeout=300)
-def get_dramas_by_filter(country=None, category=None, page=1):
-    """Mendapatkan drama berdasarkan filter negara dan kategori"""
+def scrape_filtered_page(page_num, country=None, category=None):
+    """Scrape SINGLE PAGE untuk filter"""
     params = {}
     
     if country and category:
@@ -96,31 +164,27 @@ def get_dramas_by_filter(country=None, category=None, page=1):
         params = {
             'country[]': country,
             'type': category.capitalize() if category != 'tv-show' else 'TV Show',
-            'order': 'update'
+            'order': 'update',
+            'page': page_num
         }
     elif country:
-        url = f"{BASE_URL}/country/{country}/"
-    elif category:
-        if category == 'animation':
-            url = f"{BASE_URL}/series/"
-            params = {'genre[0]': 'animation', 'type': '', 'order': 'update'}
-        elif category == 'tv-show':
-            url = f"{BASE_URL}/series/"
-            params = {'type': 'TV Show', 'order': 'update'}
+        if page_num == 1:
+            url = f"{BASE_URL}/country/{country}/"
         else:
-            url = f"{BASE_URL}/series/"
-            params = {'type': category.capitalize(), 'order': 'update'}
+            url = f"{BASE_URL}/country/{country}/page/{page_num}/"
+    elif category:
+        url = f"{BASE_URL}/series/"
+        if category == 'animation':
+            params = {'genre[0]': 'animation', 'type': '', 'order': 'update', 'page': page_num}
+        elif category == 'tv-show':
+            params = {'type': 'TV Show', 'order': 'update', 'page': page_num}
+        else:
+            params = {'type': category.capitalize(), 'order': 'update', 'page': page_num}
     else:
         return []
     
-    if page > 1:
-        if '/country/' in url:
-            url = f"{url.rstrip('/')}/page/{page}/"
-        else:
-            params['page'] = page
-    
     try:
-        r = requests.get(url, params=params, headers=HEADERS, timeout=10)
+        r = requests.get(url, params=params, headers=HEADERS, timeout=5)
         if r.status_code != 200: return []
     except:
         return []
@@ -146,7 +210,33 @@ def get_dramas_by_filter(country=None, category=None, page=1):
             "type": "movie" if is_movie else "series"
         })
     
+    print(f"🎯 Filter {country or category} page {page_num}: {len(dramas)} dramas")
     return dramas
+
+@cache.memoize(timeout=300)
+def search_drama(query):
+    """Search drama - 1 page saja"""
+    url = f"{BASE_URL}/?s={query}"
+    r = requests.get(url, headers=HEADERS, timeout=5)
+    soup = BeautifulSoup(r.text, "html.parser")
+    results = []
+    for article in soup.select("article.bs"):
+        a = article.select_one("a.tip")
+        if not a: continue
+        title = a.get("title") or a.text.strip()
+        thumb = article.select_one("img")
+        eps = article.select_one(".epx")
+        slug = urlparse(a["href"]).path.lstrip("/")
+        is_movie = is_movie_content(slug)
+        results.append({
+            "title": title.strip(),
+            "eps": eps.text.strip() if eps else "",
+            "jam": "",
+            "thumb": thumb["src"] if thumb else "",
+            "link": slug,
+            "type": "movie" if is_movie else "series"
+        })
+    return results
 
 @cache.memoize(timeout=300)
 def is_movie_content(slug):
@@ -161,7 +251,7 @@ def is_movie_content(slug):
 def get_all_episodes_from_series(slug):
     url = urljoin(BASE_URL + "/", slug)
     try:
-        r = requests.get(url, headers=HEADERS, timeout=10)
+        r = requests.get(url, headers=HEADERS, timeout=5)
         if r.status_code != 200: return []
     except: return []
     
@@ -200,13 +290,12 @@ def get_all_episodes_from_series(slug):
     except: pass
     return episodes
 
-
 @cache.memoize(timeout=300)
 def get_ongoing_dramas():
     """Mendapatkan list drama yang sedang tayang"""
     try:
         url = BASE_URL
-        r = requests.get(url, headers=HEADERS, timeout=10)
+        r = requests.get(url, headers=HEADERS, timeout=5)
         if r.status_code != 200:
             return []
         
@@ -248,10 +337,10 @@ def get_ongoing_dramas():
 def get_drama_detail(slug):
     url = urljoin(BASE_URL + "/", slug)
     try:
-        r = requests.get(url, headers=HEADERS, timeout=10)
+        r = requests.get(url, headers=HEADERS, timeout=5)
         if r.status_code != 200:
             fallback_url = f"{BASE_URL}/{slug}"
-            r = requests.get(fallback_url, headers=HEADERS, timeout=10)
+            r = requests.get(fallback_url, headers=HEADERS, timeout=5)
             if r.status_code != 200:
                 return {"title": "Error - Content Not Found", "videos": [], "downloads": [], "all_episodes": [], "sinopsis": ""}
     except:
@@ -454,43 +543,66 @@ def index():
     filter_type = request.args.get("type", "all")
     country = request.args.get("country", "")
     category = request.args.get("category", "")
-    per_page = 12
+    per_page = 24
 
     # Get ongoing dramas
     ongoing_dramas = get_ongoing_dramas()
 
-    dramas_all = []
-    total = 0
-    pages = 1
+    dramas_paginated = []
+    total_pages = 50
 
     if country or category:
-        # Filter by country/category
-        dramas_all = get_dramas_by_filter(country=country, category=category, page=page)
+        dramas_paginated = scrape_filtered_page(page, country, category)
+        total_pages = 20
+        
     elif q:
-        # Search
-        dramas_all = search_drama(q)
-    else:
-        # All dramas
-        dramas_all = get_drama_list_all()
-
-    # Apply type filter
-    if filter_type == "movie":
-        dramas_all = [d for d in dramas_all if d.get('type') == 'movie']
+        dramas_paginated = search_drama(q)
+        total_pages = 1
+        
+    elif filter_type == "movie":
+        # FILM: Realistic - 2 page saja
+        if page == 1:
+            # Page 1: film dari page 1-2
+            dramas_paginated = []
+            for p in range(1, 3):
+                page_dramas = scrape_single_page(p)
+                movies = [d for d in page_dramas if d.get('type') == 'movie']
+                dramas_paginated.extend(movies)
+            dramas_paginated = dramas_paginated[:24]
+            total_pages = 2
+        elif page == 2:
+            # Page 2: film dari page 3-4
+            dramas_paginated = []
+            for p in range(3, 5):
+                page_dramas = scrape_single_page(p)
+                movies = [d for d in page_dramas if d.get('type') == 'movie']
+                dramas_paginated.extend(movies)
+            dramas_paginated = dramas_paginated[:24]
+            total_pages = 2
+        else:
+            # Page 3+: kosong
+            dramas_paginated = []
+            total_pages = 2
+        
+        
+        
     elif filter_type == "series":
-        dramas_all = [d for d in dramas_all if d.get('type') == 'series']
+        # SERIES: Single page + filter
+        all_dramas = scrape_single_page(page)
+        dramas_paginated = [d for d in all_dramas if d.get('type') == 'series']
+        total_pages = 50
+        
+    else:
+        dramas_paginated = scrape_single_page(page)
+        total_pages = 50
 
-    # Pagination
-    total = len(dramas_all)
-    pages = math.ceil(total / per_page) if total > 0 else 1
-    start_idx = (page - 1) * per_page
-    end_idx = start_idx + per_page
-    dramas_paginated = dramas_all[start_idx:end_idx]
+    
 
     return render_template("index.html", 
                          dramas=dramas_paginated, 
                          q=q, 
                          page=page, 
-                         pages=pages,
+                         pages=total_pages,
                          country=country,
                          category=category,
                          countries=COUNTRIES,
@@ -505,6 +617,8 @@ def drama_detail_route():
         return "Drama not found", 404
     detail = get_drama_detail(slug)
     return render_template("detail.html", detail=detail, title=detail['title'], current_slug=slug)
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

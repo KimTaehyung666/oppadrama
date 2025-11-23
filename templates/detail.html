@@ -135,10 +135,10 @@ select:focus {
 <!-- Header Simple -->
 <header class="flex justify-between items-center mb-6">
   <a href="/" class="text-2xl font-bold text-red-600 dark:text-red-500">OPPADRAMA</a>
-  <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">☀️</button>
+  <div class="flex items-center gap-2">
+    <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">🌙</button>
+  </div>
 </header>
-
-
 
 <!-- JUDUL FILM/SERIES -->
 <div class="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow text-center">
@@ -478,15 +478,15 @@ function onVideoError() {
             </span>
             <span class="text-gray-500 dark:text-gray-400 text-xs block mt-1">
               {% if 'FHD' in dl.text or '1080p' in dl.text %}
-                 FHD 1080p
+                🟢 FHD 1080p
               {% elif 'HD' in dl.text or '720p' in dl.text %}
-                 HD 720p  
+                🔵 HD 720p  
               {% elif 'SD' in dl.text or '480p' in dl.text %}
-                 SD 480p
+                🟡 SD 480p
               {% elif '360p' in dl.text %}
-                 SD 360p
+                ⚪ SD 360p
               {% else %}
-                 Download
+                📥 Download
               {% endif %}
             </span>
           </div>
@@ -528,28 +528,75 @@ function onVideoError() {
 
 <!-- FOOTER YANG SELALU DI BAWAH -->
 <footer class="mt-12 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
-  OppaDrama &copy; 2025 | Made with  by VaL
+  OppaDrama &copy; 2025 | Made with ♥️ by VaL
 </footer>
 
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('toggle-dark');
-  if(localStorage.getItem('theme') === 'dark'){
-    document.documentElement.classList.add('dark');
-    btn.textContent = '☀️';
-  } else {
-    btn.textContent = '🌙';
-  }
-  btn.addEventListener('click', () => {
-    document.documentElement.classList.toggle('dark');
-    if(document.documentElement.classList.contains('dark')){
-      localStorage.setItem('theme','dark');
-      btn.textContent = '☀️';
-    } else {
-      localStorage.setItem('theme','light');
-      btn.textContent = '🌙';
+// WATCH HISTORY SYSTEM - SAVE KETIKA VIDEO DIMULAI
+function initWatchHistory() {
+    const videoIframe = document.getElementById('player');
+    if (!videoIframe) {
+        console.log('No video player found');
+        return;
     }
-  });
+
+    // Save history ketika video dimuat
+    videoIframe.addEventListener('load', function() {
+        saveToWatchHistory();
+    });
+
+    // Juga save setelah 3 detik (fallback)
+    setTimeout(saveToWatchHistory, 3000);
+}
+
+function saveToWatchHistory() {
+    const dramaData = {
+        title: "{{ detail.title }}",
+        slug: "{{ current_slug }}",
+        episode: "{% if detail.is_episode %}Episode {{ detail.current_index + 1 }}{% endif %}",
+        timestamp: new Date().toISOString()
+    };
+    
+    let history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+    
+    // Remove if already exists
+    history = history.filter(item => item.slug !== dramaData.slug);
+    
+    // Add to beginning
+    history.unshift(dramaData);
+    
+    // Keep only last 20 items
+    if (history.length > 20) {
+        history = history.slice(0, 20);
+    }
+    
+    localStorage.setItem('watchHistory', JSON.stringify(history));
+    console.log('✅ Saved to watch history:', dramaData.title);
+}
+
+// Init ketika page load
+document.addEventListener('DOMContentLoaded', initWatchHistory);
+
+// Dark Mode
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('toggle-dark');
+    if(localStorage.getItem('theme') === 'dark'){
+        document.documentElement.classList.add('dark');
+        btn.textContent = '☀️';
+    } else {
+        btn.textContent = '🌙';
+    }
+    btn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        if(document.documentElement.classList.contains('dark')){
+            localStorage.setItem('theme','dark');
+            btn.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme','light');
+            btn.textContent = '🌙';
+        }
+    });
 });
 </script>
 </body>
