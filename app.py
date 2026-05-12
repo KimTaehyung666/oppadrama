@@ -8,7 +8,7 @@ import re
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 300})
-BASE_URL = "http://45.11.57.125/"
+BASE_URL = "http://45.11.57.199//"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 # KONFIGURASI FILTER
