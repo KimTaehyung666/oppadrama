@@ -8,9 +8,35 @@ import re
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 300})
-BASE_URL = "http://45.11.57.199/?verify_human=1"
+BASE_URL = "http://45.11.57.199/"
+VERIFY_URL = "http://45.11.57.199/?verify_human=1"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
+session = requests.Session()
+
+def safe_get(url, params=None, headers=None, timeout=5, **kwargs):
+    try:
+        # bypass verify dulu
+        session.get(
+            VERIFY_URL,
+            headers=HEADERS,
+            timeout=5
+        )
+
+        # request target
+        return session.get(
+            url,
+            params=params,
+            headers=headers or HEADERS,
+            timeout=timeout,
+            **kwargs
+        )
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return None
+        
+        
 # KONFIGURASI FILTER
 COUNTRIES = {
     'south-korea': 'Korea',
@@ -37,7 +63,7 @@ def scrape_single_page(page_num):
     """Scrape SINGLE PAGE saja - sangat ringan"""
     url = f"{BASE_URL}/page/{page_num}/"
     try:
-        r = requests.get(url, headers=HEADERS, timeout=5)
+        r = safe_get(url, headers=HEADERS, timeout=5)
         if r.status_code != 200: 
             return []
         
@@ -78,7 +104,7 @@ def scrape_movies_only(page_num):
     for current_page in range(start_page, start_page + pages_to_scrape):
         url = f"{BASE_URL}/page/{current_page}/"
         try:
-            r = requests.get(url, headers=HEADERS, timeout=5)
+            r = safe_get(url, headers=HEADERS, timeout=5)
             if r.status_code != 200: 
                 continue
             
@@ -121,7 +147,7 @@ def scrape_series_only(page_num):
     for current_page in range(start_page, start_page + pages_to_scrape):
         url = f"{BASE_URL}/page/{current_page}/"
         try:
-            r = requests.get(url, headers=HEADERS, timeout=5)
+            r = safe_get(url, headers=HEADERS, timeout=5)
             if r.status_code != 200: 
                 continue
             
@@ -184,7 +210,7 @@ def scrape_filtered_page(page_num, country=None, category=None):
         return []
     
     try:
-        r = requests.get(url, params=params, headers=HEADERS, timeout=5)
+        r = safe_get(url, params=params, headers=HEADERS, timeout=5)
         if r.status_code != 200: return []
     except:
         return []
@@ -217,7 +243,7 @@ def scrape_filtered_page(page_num, country=None, category=None):
 def search_drama(query):
     """Search drama - 1 page saja"""
     url = f"{BASE_URL}/?s={query}"
-    r = requests.get(url, headers=HEADERS, timeout=5)
+    r = safe_get(url, headers=HEADERS, timeout=5)
     soup = BeautifulSoup(r.text, "html.parser")
     results = []
     for article in soup.select("article.bs"):
@@ -249,9 +275,9 @@ def is_movie_content(slug):
 
 @cache.memoize(timeout=300)
 def get_all_episodes_from_series(slug):
-    url = urljoin(BASE_URL + "/", slug)
+    url = urljoin(BASE_URL, slug)
     try:
-        r = requests.get(url, headers=HEADERS, timeout=5)
+        r = safe_get(url, headers=HEADERS, timeout=5)
         if r.status_code != 200: return []
     except: return []
     
@@ -295,7 +321,7 @@ def get_ongoing_dramas():
     """Mendapatkan list drama yang sedang tayang"""
     try:
         url = BASE_URL
-        r = requests.get(url, headers=HEADERS, timeout=5)
+        r = safe_get(url, headers=HEADERS, timeout=5)
         if r.status_code != 200:
             return []
         
@@ -335,12 +361,12 @@ def get_ongoing_dramas():
 
 @cache.memoize(timeout=300)
 def get_drama_detail(slug):
-    url = urljoin(BASE_URL + "/", slug)
+    url = urljoin(BASE_URL, slug)
     try:
-        r = requests.get(url, headers=HEADERS, timeout=5)
+        r = safe_get(url, headers=HEADERS, timeout=5)
         if r.status_code != 200:
             fallback_url = f"{BASE_URL}/{slug}"
-            r = requests.get(fallback_url, headers=HEADERS, timeout=5)
+            r = safe_get(fallback_url, headers=HEADERS, timeout=5)
             if r.status_code != 200:
                 return {"title": "Error - Content Not Found", "videos": [], "downloads": [], "all_episodes": [], "sinopsis": ""}
     except:
@@ -618,7 +644,9 @@ def drama_detail_route():
     detail = get_drama_detail(slug)
     return render_template("detail.html", detail=detail, title=detail['title'], current_slug=slug)
 
-
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
 
 if __name__ == "__main__":
     app.run(debug=True)
