@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 from flask import Flask, request, render_template, Response
 import requests, math
 from bs4 import BeautifulSoup
@@ -7,6 +10,14 @@ from flask_caching import Cache
 import re
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
+
+@app.after_request
+def add_charset(response):
+    if response.content_type.startswith('text/html'):
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
+    
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 300})
 BASE_URL = "http://45.11.57.199/"
 VERIFY_URL = "http://45.11.57.199/?verify_human=1"

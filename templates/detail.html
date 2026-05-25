@@ -1,602 +1,333 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-	<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-<style>
-  body {
-    font-family: 'Poppins', Arial, sans-serif;
-    background:#0d1117;
-    color:#e6edf3;
-    margin:0;
-    padding:0;
+<script>
+  if (localStorage.getItem('theme') === 'dark' ||
+     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
   }
-</style>
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }}</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com?plugins=line-clamp"></script>
 <script>tailwind.config={darkMode:'class'}</script>
 <style>
-.responsive-iframe {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%;
-    height: 0;
-}
-.responsive-iframe iframe {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-}
-
-/* FIX FOOTER DI BAWAH */
-html, body {
-    height: 100%;
-}
-body {
-    display: flex;
-    flex-direction: column;
-}
-.main-content {
-    flex: 1 0 auto;
-}
-.footer {
-    flex-shrink: 0;
-}
-
-/* Style untuk sinopsis */
-.sinopsis-box {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-left: 4px solid #ef4444;
-}
-.dark .sinopsis-box {
-    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-    border-left: 4px solid #dc2626;
-}
-
-/* Dark Mode untuk Select Dropdown */
-select {
-    background-color: white;
-    color: #374151;
-}
-.dark select {
-    background-color: #374151;
-    color: #d1d5db;
-    border-color: #4b5563;
-}
-select:focus {
-    outline: none;
-    border-color: #ef4444;
-    ring: 2px;
-    ring-color: #ef4444;
-}
-.dark select:focus {
-    border-color: #ef4444;
-    ring-color: #ef4444;
-}
-
-/* Smooth transitions untuk semua elemen */
-.bg-white, .bg-gray-100, .bg-gray-50, .bg-yellow-50, .bg-blue-50, .bg-green-100 {
-    transition: background-color 0.3s ease;
-}
-.dark .bg-white { background-color: #374151; }
-.dark .bg-gray-100 { background-color: #4b5563; }
-.dark .bg-gray-50 { background-color: #374151; }
-.dark .bg-yellow-50 { background-color: #78350f; }
-.dark .bg-blue-50 { background-color: #1e3a8a; }
-.dark .bg-green-100 { background-color: #064e3b; }
-
-.text-gray-700, .text-gray-600, .text-gray-500, .text-gray-800, .text-gray-900 {
-    transition: color 0.3s ease;
-}
-.dark .text-gray-700 { color: #d1d5db; }
-.dark .text-gray-600 { color: #9ca3af; }
-.dark .text-gray-500 { color: #6b7280; }
-.dark .text-gray-800 { color: #e5e7eb; }
-.dark .text-gray-900 { color: #f9fafb; }
-
-.border-gray-200, .border-gray-300 {
-    transition: border-color 0.3s ease;
-}
-.dark .border-gray-200 { border-color: #4b5563; }
-.dark .border-gray-300 { border-color: #6b7280; }
-
-/* Custom scrollbar untuk dropdown */
-.dropdown-scroll {
-    max-height: 300px;
-    overflow-y: auto;
-}
-.dropdown-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-.dropdown-scroll::-webkit-scrollbar-track {
-    background: #f1f5f9;
-}
-.dropdown-scroll::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
-}
-.dark .dropdown-scroll::-webkit-scrollbar-track {
-    background: #374151;
-}
-.dark .dropdown-scroll::-webkit-scrollbar-thumb {
-    background: #6b7280;
-}
+  body { font-family: 'Poppins', Arial, sans-serif; }
+  .responsive-iframe { position:relative; width:100%; padding-bottom:56.25%; height:0; }
+  .responsive-iframe iframe { position:absolute; width:100%; height:100%; left:0; top:0; }
+  .dropdown-scroll::-webkit-scrollbar { width:5px; }
+  .dropdown-scroll::-webkit-scrollbar-track { background:#1f2937; }
+  .dropdown-scroll::-webkit-scrollbar-thumb { background:#4b5563; border-radius:3px; }
 </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen flex flex-col">
+<div class="max-w-[1400px] mx-auto px-3 py-3 flex-1">
 
-<div class="container mx-auto px-3 py-4 main-content">
-
-<!-- Header Simple -->
-<header class="flex justify-between items-center mb-6">
-  <a href="/" class="text-2xl font-bold text-red-600 dark:text-red-500">OPPADRAMA</a>
-  <div class="flex items-center gap-2">
-    <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">🌙</button>
+<!-- Header - sama kayak index -->
+<header class="mb-3">
+  <div class="flex items-center gap-2 mb-2">
+    <a href="/" class="text-xl font-bold text-red-600 dark:text-red-500 whitespace-nowrap flex-shrink-0">OPPADRAMA</a>
+    <div class="flex flex-1 items-center bg-gray-200 dark:bg-gray-800 rounded-full px-3 gap-1.5 h-7">
+      <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <form method="get" action="/" class="flex-1">
+        <input type="text" name="q" placeholder="Cari drama..."
+               class="w-full bg-transparent text-xs outline-none placeholder-gray-400 dark:placeholder-gray-500"/>
+      </form>
+    </div>
+    <button id="toggle-dark" type="button" class="flex-shrink-0 w-7 h-7 bg-gray-200 dark:bg-gray-800 rounded-full transition-colors flex items-center justify-center">
+      <svg id="icon-moon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+      </svg>
+      <svg id="icon-sun" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707.707M6.343 6.343l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+      </svg>
+    </button>
+  </div>
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+    <a href="/" class="hover:text-red-500 transition-colors">Home</a>
+    <span>›</span>
+    <span class="text-gray-600 dark:text-gray-300 line-clamp-1">{{ detail.title }}</span>
   </div>
 </header>
 
-<!-- JUDUL FILM/SERIES -->
-<div class="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow text-center">
-  <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ detail.title }}</h1>
-  
-  <!-- Alternative Title -->
+<!-- JUDUL + INFO -->
+<div class="mb-3 p-3 bg-white dark:bg-gray-800 rounded-lg shadow">
+  <h1 class="text-base font-bold text-gray-900 dark:text-white mb-1">{{ detail.title }}</h1>
   {% if detail.alter_title %}
-  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 italic">
-    {{ detail.alter_title }}
-  </p>
+  <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-2">{{ detail.alter_title }}</p>
   {% endif %}
-  
-  <!-- Rating -->
-  {% if detail.rating and detail.rating != "0.0" %}
-  <div class="flex items-center justify-center gap-2 mb-4">
-    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Rating:</span>
-    <div class="flex items-center gap-1">
-      <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+
+  <!-- Rating + Status -->
+  <div class="flex flex-wrap gap-2 mb-3">
+    {% if detail.rating and detail.rating != "0.0" %}
+    <span class="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900 rounded text-xs font-medium text-yellow-800 dark:text-yellow-200">
+      <svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
       </svg>
-      <span class="text-sm font-bold text-gray-900 dark:text-white">{{ detail.rating }}/10</span>
-    </div>
+      {{ detail.rating }}/10
+    </span>
+    {% endif %}
+    {% if detail.info.status %}
+    <span class="px-2 py-0.5 rounded text-xs font-medium
+      {% if 'Ongoing' in detail.info.status %}bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200
+      {% elif 'Completed' in detail.info.status %}bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200
+      {% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300{% endif %}">
+      {{ detail.info.status }}
+    </span>
+    {% endif %}
+    {% if detail.info.country %}
+    <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-600 dark:text-gray-300">{{ detail.info.country }}</span>
+    {% endif %}
+    {% if detail.info.type %}
+    <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-600 dark:text-gray-300">{{ detail.info.type }}</span>
+    {% endif %}
   </div>
-  {% endif %}
-  
-  <!-- SINOSIS SECTION -->
-  {% if detail.sinopsis %}
-  <div class="mt-4 text-left sinopsis-box rounded-lg p-4">
-    <h3 class="font-semibold text-gray-700 dark:text-gray-300 mb-3 text-lg">Sinopsis:</h3>
-    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed text-justify">
-      {{ detail.sinopsis }}
-    </p>
-  </div>
-  {% else %}
-  <div class="mt-4 text-left bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
-    <p class="text-sm text-blue-600 dark:text-blue-300 text-center">
-      ⚠️ Sinopsis tidak tersedia untuk konten ini
-    </p>
-  </div>
-  {% endif %}
-</div>
 
-<!-- DRAMA INFO DETAIL SECTION -->
-{% if detail.info %}
-<div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-  <h3 class="font-semibold text-gray-900 dark:text-white mb-4 text-lg border-b border-gray-200 dark:border-gray-700 pb-2">
-    Informasi Detail
-  </h3>
-  
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- Kolom 1 -->
-    <div class="space-y-3">
-      {% if detail.info.status %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Status:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">
-          {% if "Ongoing" in detail.info.status %}
-            <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded text-xs font-medium">🟡 {{ detail.info.status }}</span>
-          {% elif "Completed" in detail.info.status %}
-            <span class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs font-medium">🟢 {{ detail.info.status }}</span>
-          {% else %}
-            {{ detail.info.status }}
-          {% endif %}
-        </span>
-      </div>
-      {% endif %}
-      
-      {% if detail.info.network %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Network:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.network }}</span>
-      </div>
-      {% endif %}
-      
-      {% if detail.info.released %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Dirilis:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.released }}</span>
-      </div>
-      {% endif %}
-      
-      {% if detail.info.duration %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Durasi:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.duration }}</span>
-      </div>
-      {% endif %}
-    </div>
-    
-    <!-- Kolom 2 -->
-    <div class="space-y-3">
-      {% if detail.info.country %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Negara:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.country }}</span>
-      </div>
-      {% endif %}
-      
-      {% if detail.info.type %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Tipe:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.type }}</span>
-      </div>
-      {% endif %}
-      
-      {% if detail.info.episodes %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Episode:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.episodes }}</span>
-      </div>
-      {% endif %}
-      
-      {% if detail.info.director %}
-      <div class="flex">
-        <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Sutradara:</span>
-        <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.director }}</span>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-  
-  <!-- Cast -->
-  {% if detail.info.cast %}
-  <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-    <div class="flex">
-      <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300">Pemeran:</span>
-      <span class="flex-1 text-sm text-gray-600 dark:text-gray-400">{{ detail.info.cast }}</span>
-    </div>
+  <!-- Info Grid -->
+  {% if detail.info %}
+  <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3 text-xs">
+    {% if detail.info.network %}<div><span class="text-gray-400">Network</span><p class="text-gray-700 dark:text-gray-300 font-medium">{{ detail.info.network }}</p></div>{% endif %}
+    {% if detail.info.released %}<div><span class="text-gray-400">Dirilis</span><p class="text-gray-700 dark:text-gray-300 font-medium">{{ detail.info.released }}</p></div>{% endif %}
+    {% if detail.info.duration %}<div><span class="text-gray-400">Durasi</span><p class="text-gray-700 dark:text-gray-300 font-medium">{{ detail.info.duration }}</p></div>{% endif %}
+    {% if detail.info.episodes %}<div><span class="text-gray-400">Episode</span><p class="text-gray-700 dark:text-gray-300 font-medium">{{ detail.info.episodes }}</p></div>{% endif %}
+    {% if detail.info.director %}<div class="col-span-2"><span class="text-gray-400">Sutradara</span><p class="text-gray-700 dark:text-gray-300 font-medium">{{ detail.info.director }}</p></div>{% endif %}
+    {% if detail.info.cast %}<div class="col-span-2"><span class="text-gray-400">Pemeran</span><p class="text-gray-700 dark:text-gray-300 font-medium line-clamp-2">{{ detail.info.cast }}</p></div>{% endif %}
   </div>
   {% endif %}
-  
+
   <!-- Genres -->
   {% if detail.info.genres %}
-  <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-    <div class="flex flex-col sm:flex-row sm:items-start">
-      <span class="w-24 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">Genre:</span>
-      <div class="flex-1 flex flex-wrap gap-2">
-        {% for genre in detail.info.genres %}
-        <span class="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-full text-xs font-medium">
-          {{ genre }}
-        </span>
-        {% endfor %}
-      </div>
-    </div>
+  <div class="flex flex-wrap gap-1 mb-3">
+    {% for genre in detail.info.genres %}
+    <span class="px-2 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded text-[10px] font-medium">{{ genre }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Sinopsis -->
+  {% if detail.sinopsis %}
+  <div class="border-l-2 border-red-500 pl-3">
+    <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-4" id="sinopsis-text">{{ detail.sinopsis }}</p>
+    <button onclick="toggleSinopsis()" id="sinopsis-btn" class="text-[10px] text-red-500 mt-1 hover:underline">Selengkapnya</button>
   </div>
   {% endif %}
 </div>
-{% endif %}
 
-<!-- VIDEO PLAYER - DROPDOWN ONLY WITH DARK MODE -->
+<!-- VIDEO PLAYER -->
 {% if detail.videos and (detail.is_episode or detail.is_movie) %}
-<div class="mb-6">
-  <!-- Video Player -->
+<div class="mb-3">
   <div class="bg-black rounded-lg overflow-hidden shadow-lg">
     <div class="responsive-iframe">
-      <iframe 
-        id="player" 
-        src="{% if detail.videos %}{{ detail.videos[0].url }}{% endif %}" 
-        allowfullscreen
-        frameborder="0"
-        onload="onVideoLoad()"
-        onerror="onVideoError()"
-      ></iframe>
+      <iframe id="player" src="{{ detail.videos[0].url if detail.videos else '' }}"
+        allowfullscreen frameborder="0"></iframe>
     </div>
   </div>
 
-<!-- Server Selection + Episode Navigation -->
-<div class="mt-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-  <div class="flex flex-col gap-4">
-    <!-- Baris 1: Pilih Server - DROPDOWN STYLE BARU -->
-    <div class="flex items-center gap-4">
-      <span class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Pilih Server:</span>
-      
-      <!-- Dropdown Server -->
-      <div class="relative">
-        <button type="button" id="server-dropdown-btn" 
-                class="w-48 px-4 py-2 text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-red-500 transition-colors flex items-center justify-between">
-          <span class="text-sm" id="selected-server">
-            {% if detail.videos %}
-              {{ detail.videos[0].provider }}
-            {% else %}
-              Default
-            {% endif %}
-          </span>
-          <svg class="w-4 h-4 ml-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        
-        <!-- Dropdown Content -->
-        <div id="server-dropdown" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 hidden">
-          <div class="p-2 dropdown-scroll max-h-40">
-            {% for v in detail.videos %}
-            <button type="button" 
-                    class="w-full text-left px-3 py-2 text-sm rounded hover:bg-red-600 hover:text-white transition-colors {% if loop.first %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}"
-                    data-url="{{ v.url }}" 
-                    data-provider="{{ v.provider }}"
-                    onclick="switchVideoFromButton(this)">
-              {{ v.provider }}
-            </button>
-            {% endfor %}
+  <!-- Server + Nav -->
+  <div class="mt-2 bg-white dark:bg-gray-800 rounded-lg p-2.5">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+
+      <!-- Server Dropdown -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Server:</span>
+        <div class="relative">
+          <button type="button" id="server-dropdown-btn"
+                  class="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <span id="selected-server">{{ detail.videos[0].provider if detail.videos else 'Default' }}</span>
+            <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div id="server-dropdown" class="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 hidden">
+            <div class="p-1 dropdown-scroll max-h-40 overflow-y-auto">
+              {% for v in detail.videos %}
+              <button type="button"
+                      class="w-full text-left px-2.5 py-1.5 text-xs rounded transition-colors hover:bg-red-600 hover:text-white {% if loop.first %}bg-red-600 text-white{% else %}text-gray-700 dark:text-gray-300{% endif %}"
+                      data-url="{{ v.url }}" data-provider="{{ v.provider }}"
+                      onclick="switchVideo(this)">
+                {{ v.provider }}
+              </button>
+              {% endfor %}
+            </div>
           </div>
         </div>
+        <span class="text-[10px] text-green-500 font-medium" id="current-server">{{ detail.videos[0].provider if detail.videos else '' }}</span>
       </div>
-    </div>
-    
-    <!-- Baris 2: Server Aktif + Episode Navigation -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <!-- Server Aktif -->
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Server aktif:</span>
-        <span id="current-server" class="text-green-600 dark:text-green-400 text-sm font-medium">
-          {{ detail.videos[0].provider if detail.videos else 'Default' }}
-        </span>
-      </div>
-      
-      <!-- Episode Navigation -->
+
+      <!-- Semua Episode -->
+      {% if detail.series_link and not detail.is_movie and detail.is_episode %}
+      <a href="/drama?slug={{ detail.series_link }}"
+         class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs hover:bg-red-600 hover:text-white transition-colors font-medium whitespace-nowrap">
+        Semua Ep
+      </a>
+      {% endif %}
+
+      <!-- Prev/Next Episode -->
       {% if detail.all_episodes and detail.all_episodes|length > 0 and detail.is_episode and detail.current_index >= 0 %}
-      <div class="flex items-center gap-3">
-        <!-- Episode Info -->
-        <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-          Episode {{ detail.current_index + 1 }} dari {{ detail.all_episodes|length }}
-        </span>
-        
-        <!-- Prev/Next Buttons - WARNA MERAH -->
-        <div class="flex gap-2">
-          {% if detail.current_index > 0 %}
-            <a href="/drama?slug={{ detail.all_episodes[detail.current_index - 1].link }}" 
-               class="px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors font-medium">
-               Prev
-            </a>
-          {% else %}
-            <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded text-sm">
-               Prev
-            </span>
-          {% endif %}
-          
-          {% if detail.current_index < detail.all_episodes|length - 1 %}
-            <a href="/drama?slug={{ detail.all_episodes[detail.current_index + 1].link }}" 
-               class="px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors font-medium">
-              Next
-            </a>
-          {% else %}
-            <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded text-sm">
-              Next
-            </span>
-          {% endif %}
-        </div>
+      <div class="flex items-center gap-1.5">
+        <span class="text-[10px] text-gray-400">Ep {{ detail.current_index + 1 }}/{{ detail.all_episodes|length }}</span>
+        {% if detail.current_index > 0 %}
+        <a href="/drama?slug={{ detail.all_episodes[detail.current_index - 1].link }}"
+           class="w-7 h-7 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded text-xs hover:bg-red-600 hover:text-white transition-colors">‹</a>
+        {% else %}
+        <span class="w-7 h-7 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-400">‹</span>
+        {% endif %}
+        {% if detail.current_index < detail.all_episodes|length - 1 %}
+        <a href="/drama?slug={{ detail.all_episodes[detail.current_index + 1].link }}"
+           class="w-7 h-7 flex items-center justify-center bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors">›</a>
+        {% else %}
+        <span class="w-7 h-7 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-400">›</span>
+        {% endif %}
       </div>
       {% endif %}
     </div>
   </div>
 </div>
-
-<script>
-let currentVideoUrl = '{% if detail.videos %}{{ detail.videos[0].url }}{% endif %}';
-let currentProvider = '{% if detail.videos %}{{ detail.videos[0].provider }}{% else %}Default{% endif %}';
-
-// Dropdown functionality untuk server
-const serverDropdownBtn = document.getElementById('server-dropdown-btn');
-const serverDropdown = document.getElementById('server-dropdown');
-
-serverDropdownBtn.addEventListener('click', () => {
-  serverDropdown.classList.toggle('hidden');
-  const svg = serverDropdownBtn.querySelector('svg');
-  svg.classList.toggle('rotate-180');
-});
-
-// Close dropdown ketika klik outside
-document.addEventListener('click', (e) => {
-  if (!serverDropdownBtn.contains(e.target) && !serverDropdown.contains(e.target)) {
-    serverDropdown.classList.add('hidden');
-    serverDropdownBtn.querySelector('svg').classList.remove('rotate-180');
-  }
-});
-
-function switchVideoFromButton(button) {
-  const url = button.getAttribute('data-url');
-  const provider = button.getAttribute('data-provider');
-  
-  currentVideoUrl = url;
-  currentProvider = provider;
-  
-  // Update tampilan dropdown
-  document.getElementById('selected-server').textContent = provider;
-  document.getElementById('current-server').textContent = provider;
-  
-  // Close dropdown
-  serverDropdown.classList.add('hidden');
-  serverDropdownBtn.querySelector('svg').classList.remove('rotate-180');
-  
-  // Show loading state
-  const player = document.getElementById('player');
-  player.style.opacity = '0.7';
-  
-  // Update video source
-  player.src = url;
-  
-  // Hide fallback
-  document.getElementById('video-fallback').classList.add('hidden');
-  
-  // Restore opacity setelah video load
-  setTimeout(() => {
-    player.style.opacity = '1';
-  }, 1000);
-}
-
-function onVideoLoad() {
-  console.log('Video loaded successfully');
-  document.getElementById('player').style.opacity = '1';
-  document.getElementById('video-fallback').classList.add('hidden');
-}
-
-function onVideoError() {
-  console.log('Video failed to load');
-  document.getElementById('player').style.opacity = '1';
-  document.getElementById('video-fallback').classList.remove('hidden');
-}
-</script>
 {% endif %}
 
-<!-- DOWNLOAD SECTION - RAPIH -->
+<!-- DOWNLOAD -->
 {% if detail.downloads and (detail.is_episode or detail.is_movie) %}
-<div class="mb-4">
-  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-    <div class="grid gap-3">
-      {% for dl in detail.downloads %}
-      <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-        <div class="flex items-center gap-3">
-          <!-- Server Icon -->
-          <div class="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-          <span class="text-red-600 dark:text-red-400 text-sm font-bold">DL</span>
-          </div>
-          <div>
-            <span class="font-medium text-gray-700 dark:text-gray-300 text-sm">
-              {{ dl.text.split(' ')[0] }} <!-- Ambil nama server saja -->
-            </span>
-            <span class="text-gray-500 dark:text-gray-400 text-xs block mt-1">
-              {% if 'FHD' in dl.text or '1080p' in dl.text %}
-                🟢 FHD 1080p
-              {% elif 'HD' in dl.text or '720p' in dl.text %}
-                🔵 HD 720p  
-              {% elif 'SD' in dl.text or '480p' in dl.text %}
-                🟡 SD 480p
-              {% elif '360p' in dl.text %}
-                ⚪ SD 360p
-              {% else %}
-                📥 Download
-              {% endif %}
-            </span>
-          </div>
+<div class="mb-3">
+  <h2 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Download</h2>
+  <div class="grid gap-1.5">
+    {% for dl in detail.downloads %}
+    <div class="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 rounded-lg">
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 bg-red-100 dark:bg-red-900 rounded flex items-center justify-center text-[9px] font-bold text-red-600 dark:text-red-400">DL</span>
+        <div>
+          <p class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ dl.text.split(' ')[0] }}</p>
+          <p class="text-[10px] text-gray-400">
+            {% if 'FHD' in dl.text or '1080' in dl.text %}FHD 1080p
+            {% elif 'HD' in dl.text or '720' in dl.text %}HD 720p
+            {% elif '480' in dl.text %}SD 480p
+            {% elif '360' in dl.text %}SD 360p
+            {% else %}Download{% endif %}
+          </p>
         </div>
-        <a href="{{ dl.url }}" target="_blank" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors">
-          Download
-        </a>
       </div>
-      {% endfor %}
+      <a href="{{ dl.url }}" target="_blank"
+         class="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors font-medium">
+        Unduh
+      </a>
     </div>
+    {% endfor %}
   </div>
 </div>
 {% endif %}
 
 <!-- EPISODE LIST -->
 {% if detail.episodes and detail.episodes|length > 0 and detail.is_series_overview %}
-<div class="mb-4">
-  <h2 class="font-bold mb-2 text-lg text-gray-900 dark:text-white">Episode List</h2>
-  <div class="grid gap-1">
+<div class="mb-3">
+  <h2 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Daftar Episode</h2>
+  <div class="grid grid-cols-2 gap-1">
     {% for ep in detail.episodes %}
-    <a href="/drama?slug={{ ep.link }}" 
-       class="px-3 py-2 bg-white dark:bg-gray-800 rounded hover:bg-red-600 hover:text-white text-sm transition-colors {% if current_slug == ep.link %}bg-red-600 text-white{% endif %}">
-      {{ ep.num }} - {{ ep.title }}
+    <a href="/drama?slug={{ ep.link }}"
+       class="px-2.5 py-1.5 bg-white dark:bg-gray-800 rounded text-xs hover:bg-red-600 hover:text-white transition-colors truncate {% if current_slug == ep.link %}bg-red-600 text-white{% endif %}">
+      Ep {{ ep.num }}{% if ep.title and ep.title != 'Episode ' + ep.num %} · {{ ep.title[:20] }}{% endif %}
     </a>
     {% endfor %}
   </div>
 </div>
 {% endif %}
 
-<!-- NAVIGATION BUTTONS -->
-<div class="flex gap-2 mb-6">
-  <a href="/" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"> Kembali ke Home</a>
-  {% if detail.series_link and not detail.is_movie and detail.is_episode %}
-  <a href="/drama?slug={{ detail.series_link }}" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 text-sm font-medium"> Lihat Semua Episode</a>
-  {% endif %}
+
+
 </div>
 
-</div> <!-- end main-content -->
-
-<!-- FOOTER YANG SELALU DI BAWAH -->
-<footer class="mt-12 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
-  OppaDrama &copy; 2025 | Made with ♥️ by VaL
+<footer class="text-center text-[10px] text-gray-400 dark:text-gray-600 pb-3">
+  OppaDrama &copy; 2026 | Made with ♥ by VaL
 </footer>
 
+<!-- Scroll to top -->
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+  class="fixed bottom-5 right-3 z-50 w-8 h-8 bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 hover:bg-red-700 text-sm">
+  ↑
+</button>
 
 <script>
-// WATCH HISTORY SYSTEM - SAVE KETIKA VIDEO DIMULAI
-function initWatchHistory() {
-    const videoIframe = document.getElementById('player');
-    if (!videoIframe) {
-        console.log('No video player found');
-        return;
-    }
+// Scroll to top
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scroll-top');
+  if (window.scrollY > 300) { btn.classList.remove('opacity-0','pointer-events-none'); btn.classList.add('opacity-100'); }
+  else { btn.classList.add('opacity-0','pointer-events-none'); btn.classList.remove('opacity-100'); }
+});
 
-    // Save history ketika video dimuat
-    videoIframe.addEventListener('load', function() {
-        saveToWatchHistory();
-    });
-
-    // Juga save setelah 3 detik (fallback)
-    setTimeout(saveToWatchHistory, 3000);
+// Dark mode
+function updateDarkIcon(isDark) {
+  document.getElementById('icon-moon').classList.toggle('hidden', isDark);
+  document.getElementById('icon-sun').classList.toggle('hidden', !isDark);
 }
-
-function saveToWatchHistory() {
-    const dramaData = {
-        title: "{{ detail.title }}",
-        slug: "{{ current_slug }}",
-        episode: "{% if detail.is_episode %}Episode {{ detail.current_index + 1 }}{% endif %}",
-        timestamp: new Date().toISOString()
-    };
-    
-    let history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
-    
-    // Remove if already exists
-    history = history.filter(item => item.slug !== dramaData.slug);
-    
-    // Add to beginning
-    history.unshift(dramaData);
-    
-    // Keep only last 20 items
-    if (history.length > 20) {
-        history = history.slice(0, 20);
-    }
-    
-    localStorage.setItem('watchHistory', JSON.stringify(history));
-    console.log('✅ Saved to watch history:', dramaData.title);
-}
-
-// Init ketika page load
-document.addEventListener('DOMContentLoaded', initWatchHistory);
-
-// Dark Mode
 document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('toggle-dark');
-    if(localStorage.getItem('theme') === 'dark'){
-        document.documentElement.classList.add('dark');
-        btn.textContent = '☀️';
-    } else {
-        btn.textContent = '🌙';
+  const btn = document.getElementById('toggle-dark');
+  const isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', isDark);
+  updateDarkIcon(isDark);
+  btn.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    const nowDark = document.documentElement.classList.contains('dark');
+    localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+    updateDarkIcon(nowDark);
+  });
+});
+
+// Server dropdown
+const serverBtn = document.getElementById('server-dropdown-btn');
+const serverDrop = document.getElementById('server-dropdown');
+if (serverBtn) {
+  serverBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    serverDrop.classList.toggle('hidden');
+    serverBtn.querySelector('svg').classList.toggle('rotate-180');
+  });
+  document.addEventListener('click', (e) => {
+    if (!serverBtn.contains(e.target) && !serverDrop.contains(e.target)) {
+      serverDrop.classList.add('hidden');
+      serverBtn.querySelector('svg').classList.remove('rotate-180');
     }
-    btn.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        if(document.documentElement.classList.contains('dark')){
-            localStorage.setItem('theme','dark');
-            btn.textContent = '☀️';
-        } else {
-            localStorage.setItem('theme','light');
-            btn.textContent = '🌙';
-        }
-    });
+  });
+}
+
+function switchVideo(btn) {
+  const url = btn.getAttribute('data-url');
+  const provider = btn.getAttribute('data-provider');
+  document.getElementById('player').src = url;
+  document.getElementById('selected-server').textContent = provider;
+  document.getElementById('current-server').textContent = provider;
+  serverDrop.classList.add('hidden');
+  serverBtn.querySelector('svg').classList.remove('rotate-180');
+}
+
+// Sinopsis toggle
+function toggleSinopsis() {
+  const el = document.getElementById('sinopsis-text');
+  const btn = document.getElementById('sinopsis-btn');
+  if (el.classList.contains('line-clamp-4')) {
+    el.classList.remove('line-clamp-4');
+    btn.textContent = 'Sembunyikan';
+  } else {
+    el.classList.add('line-clamp-4');
+    btn.textContent = 'Selengkapnya';
+  }
+}
+
+// Watch history
+function saveToWatchHistory() {
+  const data = { title:"{{ detail.title }}", slug:"{{ current_slug }}", episode:"{% if detail.is_episode %}Episode {{ detail.current_index + 1 }}{% endif %}", timestamp:new Date().toISOString() };
+  let history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+  history = history.filter(i => i.slug !== data.slug);
+  history.unshift(data);
+  if (history.length > 20) history = history.slice(0,20);
+  localStorage.setItem('watchHistory', JSON.stringify(history));
+}
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(saveToWatchHistory, 3000);
+  const player = document.getElementById('player');
+  if (player) player.addEventListener('load', saveToWatchHistory);
 });
 </script>
 </body>

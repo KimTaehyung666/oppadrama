@@ -50,290 +50,115 @@
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-<div class="max-w-[1400px] mx-auto px-3 py-4">
+<div class="max-w-[1400px] mx-auto px-3 py-3">
 
 <!-- Header -->
-<header class="flex justify-between items-center mb-6">
-  <a href="/" class="text-2xl font-bold text-red-600 dark:text-red-500 whitespace-nowrap">OPPADRAMA</a>
-  <div class="flex items-center gap-2">
-    <!-- Button Sedang Tayang -->
-    <button id="ongoing-btn" class="px-3 py-1 bg-red-600 text-white rounded text-sm transition-colors hover:bg-red-700 flex items-center gap-1">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+<header class="mb-3">
+  <!-- Row 1: Logo + Search sejajar + Dark mode -->
+  <form method="get" action="/" class="flex items-center gap-2 mb-2">
+    <input type="hidden" name="type" value="{{ request.args.get('type', 'all') }}">
+    <input type="hidden" name="country" value="{{ country }}">
+    <input type="hidden" name="category" value="{{ category }}">
+    <a href="/" class="text-xl font-bold text-red-600 dark:text-red-500 whitespace-nowrap flex-shrink-0">OPPADRAMA</a>
+    <div class="flex flex-1 items-center bg-gray-200 dark:bg-gray-800 rounded-full px-3 gap-1.5 h-7">
+      <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
-      Sedang Tayang
+      <input type="text" name="q" value="{{ q }}" placeholder="Cari drama..."
+             class="flex-1 min-w-0 bg-transparent text-xs outline-none placeholder-gray-400 dark:placeholder-gray-500"/>
+    </div>
+    <button id="toggle-dark" type="button" class="flex-shrink-0 w-7 h-7 bg-gray-200 dark:bg-gray-800 rounded-full transition-colors flex items-center justify-center">
+      <svg id="icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+      </svg>
+      <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707.707M6.343 6.343l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+      </svg>
     </button>
-    <button id="toggle-dark" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm transition-colors">🌙</button>
-  </div>
-</header>
+  </form>
 
-<!-- Modal Sedang Tayang -->
-<div id="ongoing-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-  <div class="flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md modal-animate">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          Drama Ongoing
-        </h3>
-        <button id="close-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-      
-      <!-- Modal Content -->
-      <div class="p-4">
-        <div class="space-y-2 max-h-96 overflow-y-auto dropdown-scroll">
-          {% if ongoing_dramas %}
-            {% for drama in ongoing_dramas %}
-            <a href="/drama?slug={{ drama.link }}" 
-               class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 group transition-colors">
-              <div class="flex items-center gap-3">
-                <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <span class="font-medium text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 text-sm">
-                  {{ drama.title }}
-                </span>
-              </div>
-              <span class="px-2 py-1 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-300 rounded text-xs font-medium">
-                {{ drama.episode }}
-              </span>
-            </a>
-            {% endfor %}
-          {% else %}
-            <div class="text-center py-8">
-              <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <p class="text-gray-500 dark:text-gray-400 text-sm">Tidak ada drama yang sedang tayang</p>
-            </div>
-          {% endif %}
-        </div>
-        
-        <!-- Modal Footer -->
-        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <!-- Row 3: Filter pills sejajar semua -->
+  <div class="flex items-center gap-1.5 flex-wrap">
+    <a href="/?type=all{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+       class="px-2.5 py-1 rounded text-xs font-medium transition-colors {% if request.args.get('type', 'all') == 'all' %}bg-red-600 text-white{% else %}bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300{% endif %}">Semua</a>
+    <a href="/?type=movie{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+       class="px-2.5 py-1 rounded text-xs font-medium transition-colors {% if request.args.get('type') == 'movie' %}bg-red-600 text-white{% else %}bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300{% endif %}">Film</a>
+    <a href="/?type=series{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+       class="px-2.5 py-1 rounded text-xs font-medium transition-colors {% if request.args.get('type') == 'series' %}bg-red-600 text-white{% else %}bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300{% endif %}">Series</a>
 
-<!-- Search Bar -->
-<form method="get" action="/" class="flex gap-2 mb-4">
-  <input type="hidden" name="type" value="{{ request.args.get('type', 'all') }}">
-  <input type="hidden" name="country" value="{{ country }}">
-  <input type="hidden" name="category" value="{{ category }}">
-  <input type="text" name="q" value="{{ q }}" placeholder="Cari film atau drama..." class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded transition-colors" />
-  <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">Cari</button>
-</form>
-
-<!-- FILTER SECTION DROPDOWN -->
-<div class="mb-6 space-y-4">
-
-  <!-- Filter Type + Dropdown Negara/Kategori + History Button -->
-  <div class="flex flex-col sm:flex-row gap-3">
-    
-    <!-- Filter Type (Tetap Button) -->
-    <div class="flex gap-1">
-      <a href="/?type=all{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}" 
-         class="px-3 py-2 rounded text-sm transition-colors {% if request.args.get('type', 'all') == 'all' %}bg-red-600 text-white{% else %}bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600{% endif %}">
-        Semua
-      </a>
-      <a href="/?type=movie{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}" 
-         class="px-3 py-2 rounded text-sm transition-colors {% if request.args.get('type') == 'movie' %}bg-red-600 text-white{% else %}bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600{% endif %}">
-        Film
-      </a>
-      <a href="/?type=series{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}" 
-         class="px-3 py-2 rounded text-sm transition-colors {% if request.args.get('type') == 'series' %}bg-red-600 text-white{% else %}bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600{% endif %}">
-        Series
-      </a>
-    </div>
-
-    <!-- Dropdown Filter Negara & Kategori -->
-    <div class="relative flex-1 max-w-md">
-      <button type="button" id="filter-dropdown-btn" 
-              class="w-full px-4 py-2 text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-red-500 transition-colors flex items-center justify-between">
-        <span class="text-sm">
-          {% if country and category %}
-            {{ countries[country] }} {{ categories[category] }}
-          {% elif country %}
-             {{ countries[country] }}
-          {% elif category %}
-             {{ categories[category] }}
-          {% else %}
-             Filter by Country
-          {% endif %}
-        </span>
-        <svg class="w-4 h-4 ml-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Filter Dropdown (sejajar) -->
+    <div class="relative">
+      <button type="button" id="filter-dropdown-btn"
+              class="px-2.5 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 {% if country or category %}bg-red-600 text-white{% else %}bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300{% endif %}">
+        <span>{% if country and category %}{{ countries[country] }} · {{ categories[category] }}{% elif country %}{{ countries[country] }}{% elif category %}{{ categories[category] }}{% else %}Filter{% endif %}</span>
+        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
-      
-      <!-- Dropdown Content -->
-      <div id="filter-dropdown" class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 hidden">
-        <div class="p-3 dropdown-scroll">
-          
-          <!-- Drama Section -->
-          <div class="mb-4">
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-2 text-sm flex items-center">
-              <span class="mr-2"></span> Drama by Country
-            </h3>
-            <div class="grid grid-cols-2 gap-1">
-              <a href="/?country=south-korea&category=drama" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'south-korea' and category == 'drama' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Korea
-              </a>
-              <a href="/?country=china&category=drama" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'china' and category == 'drama' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                China
-              </a>
-              <a href="/?country=thailand&category=drama" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'thailand' and category == 'drama' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Thailand
-              </a>
-              <a href="/?country=japan&category=drama" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'japan' and category == 'drama' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Jepang
-              </a>
-              <a href="/?country=taiwan&category=drama" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'taiwan' and category == 'drama' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Taiwan
-              </a>
-              <a href="/?country=philippines&category=drama" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'philippines' and category == 'drama' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Filipina
-              </a>
-              <a href="/?country=usa&category=drama" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'usa' and category == 'drama' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Series Barat
-              </a>
-            </div>
-          </div>
 
-          <!-- Film Section -->
-          <div class="mb-4">
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-2 text-sm flex items-center">
-              <span class="mr-2"></span> Film by Country
-            </h3>
-            <div class="grid grid-cols-2 gap-1">
-              <a href="/?country=south-korea&category=movie" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'south-korea' and category == 'movie' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Korea
-              </a>
-              <a href="/?country=china&category=movie" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'china' and category == 'movie' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                China
-              </a>
-              <a href="/?country=thailand&category=movie" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'thailand' and category == 'movie' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Thailand
-              </a>
-              <a href="/?country=japan&category=movie" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'japan' and category == 'movie' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Jepang
-              </a>
-              <a href="/?country=hong-kong&category=movie" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'hong-kong' and category == 'movie' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Hong Kong
-              </a>
-              <a href="/?country=india&category=movie" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'india' and category == 'movie' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                India
-              </a>
-              <a href="/?country=united-states&category=movie" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if country == 'united-states' and category == 'movie' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                Film Barat
-              </a>
-            </div>
-          </div>
-
-          <!-- Kategori Lainnya -->
-          <div>
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-2 text-sm flex items-center">
-              <span class="mr-2"></span> Kategori Lainnya
-            </h3>
-            <div class="grid grid-cols-2 gap-1">
-              <a href="/?category=animation" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if category == 'animation' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                 Animasi
-              </a>
-              <a href="/?category=tv-show" 
-                 class="px-2 py-1 text-xs rounded hover:bg-red-600 hover:text-white transition-colors {% if category == 'tv-show' %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700{% endif %}">
-                 Variety Show
-              </a>
-            </div>
-          </div>
-
-          <!-- Clear Filter -->
-          <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
-            <a href="/" class="block w-full px-3 py-2 text-center text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-               Clear All Filters
+      <!-- Filter Dropdown Menu -->
+      <div id="filter-dropdown" class="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 hidden">
+        <div class="p-3">
+          <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Negara</p>
+          <div class="flex flex-wrap gap-1 mb-3">
+            {% for key, val in countries.items() %}
+            <a href="/?country={{ key }}{% if request.args.get('type') %}&type={{ request.args.get('type') }}{% endif %}"
+               class="px-1.5 py-0.5 rounded text-[10px] transition-colors {% if country == key %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-100{% endif %}">
+              {{ val }}
             </a>
+            {% endfor %}
           </div>
-
+          <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Kategori</p>
+          <div class="flex flex-wrap gap-1">
+            {% for key, val in categories.items() %}
+            <a href="/?category={{ key }}{% if request.args.get('type') %}&type={{ request.args.get('type') }}{% endif %}"
+               class="px-1.5 py-0.5 rounded text-[10px] transition-colors {% if category == key %}bg-red-600 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-100{% endif %}">
+              {{ val }}
+            </a>
+            {% endfor %}
+          </div>
+          {% if country or category %}
+          <a href="/" class="block mt-3 text-center text-[11px] text-red-600 hover:underline">Reset Filter</a>
+          {% endif %}
         </div>
       </div>
     </div>
-
-
   </div>
-
-  <!-- Active Filter Badge -->
-  {% if country or category %}
-  <div class="flex items-center gap-2 text-sm">
-    <span class="text-gray-600 dark:text-gray-400">Active filter:</span>
-    <div class="flex flex-wrap gap-2">
-      {% if country %}
-      <span class="px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded text-xs">
-         {{ countries[country] }}
-      </span>
-      {% endif %}
-      {% if category %}
-      <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
-         {{ categories[category] }}
-      </span>
-      {% endif %}
-      <a href="/" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-        ✕ Clear
-      </a>
-    </div>
-  </div>
-  {% endif %}
-
-</div>
+</header>
 
 <!-- Grid Drama -->
 <div class="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
 
   {% for drama in dramas %}
 
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow transition-all hover:shadow-lg flex flex-col overflow-hidden h-full">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow transition-all hover:shadow-lg flex flex-col overflow-hidden h-full group">
 
-    {% if drama.thumb %}
-    <img src="{{ drama.thumb }}"
-         alt="{{ drama.title }}"
-         class="w-full aspect-[2/3] object-cover" />
-    {% endif %}
+    <a href="/drama?slug={{ drama.link }}" class="block relative overflow-hidden">
+      {% if drama.thumb %}
+      <img src="{{ drama.thumb }}"
+           alt="{{ drama.title }}"
+           class="w-full aspect-[2/3] object-cover transition-transform duration-300 group-hover:scale-105" />
+      {% endif %}
+
+      <!-- Hover Overlay -->
+      <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100">
+        <span class="text-white text-[10px] font-medium px-2 py-1 bg-red-600 rounded">Tonton</span>
+      </div>
+
+      <!-- Badge NEW/END -->
+      {% if 'END' in drama.title or 'end' in drama.title %}
+      <span class="absolute top-1 left-1 px-1.5 py-0.5 bg-gray-700 text-white text-[9px] font-bold rounded">END</span>
+      {% elif drama.jam and ('menit' in drama.jam or 'jam' in drama.jam) %}
+      <span class="absolute top-1 left-1 px-1.5 py-0.5 bg-red-600 text-white text-[9px] font-bold rounded animate-pulse">NEW</span>
+      {% endif %}
+    </a>
 
     <div class="p-2 flex flex-col flex-1">
 
       <!-- Title -->
       <a href="/drama?slug={{ drama.link }}"
          class="block text-[11px] font-medium leading-[1.25] hover:text-red-600 dark:hover:text-red-400 transition-colors min-h-[34px] overflow-hidden">
-
-        <span class="line-clamp-2">
-          {{ drama.title }}
-        </span>
-
+        <span class="line-clamp-2">{{ drama.title }}</span>
       </a>
 
       <!-- Time -->
@@ -350,25 +175,54 @@
 </div>
 
 <!-- Pagination -->
-<div class="flex justify-center items-center space-x-2 mt-8">
+<div class="flex justify-center items-center gap-1 mt-6">
   {% if page > 1 %}
-  <a href="?page={{ page - 1 }}{% if q %}&q={{ q }}{% endif %}{% if request.args.get('type') %}&type={{ request.args.get('type') }}{% endif %}{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm transition-colors">Prev</a>
+  <a href="?page={{ page - 1 }}{% if q %}&q={{ q }}{% endif %}{% if request.args.get('type') %}&type={{ request.args.get('type') }}{% endif %}{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}" 
+     class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors">‹</a>
   {% else %}
-  <span class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-gray-500 text-sm">Prev</span>
+  <span class="w-8 h-8 flex items-center justify-center bg-gray-300 dark:bg-gray-700 text-gray-500 rounded text-xs">‹</span>
   {% endif %}
 
-  <span class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm transition-colors">{{ page }}/{{ pages }}</span>
+  <span class="px-2 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded text-xs min-w-[3rem] text-center">{{ page }}/{{ pages }}</span>
 
   {% if page < pages %}
-  <a href="?page={{ page + 1 }}{% if q %}&q={{ q }}{% endif %}{% if request.args.get('type') %}&type={{ request.args.get('type') }}{% endif %}{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm transition-colors">Next</a>
+  <a href="?page={{ page + 1 }}{% if q %}&q={{ q }}{% endif %}{% if request.args.get('type') %}&type={{ request.args.get('type') }}{% endif %}{% if country %}&country={{ country }}{% endif %}{% if category %}&category={{ category }}{% endif %}" 
+     class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors">›</a>
   {% else %}
-  <span class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-gray-500 text-sm">Next</span>
+  <span class="w-8 h-8 flex items-center justify-center bg-gray-300 dark:bg-gray-700 text-gray-500 rounded text-xs">›</span>
   {% endif %}
 </div>
 
-<footer class="mt-12 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
-  OppaDrama &copy; 2025 | Made with ♥️ by VaL
+<!-- Sedang Tayang Section -->
+{% if ongoing_dramas %}
+<div class="mt-8">
+  <div class="flex items-center gap-2 mb-3">
+    <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ongoing</h2>
+  </div>
+  <div class="grid grid-cols-1 gap-1.5">
+    {% for drama in ongoing_dramas %}
+    <a href="/drama?slug={{ drama.link }}"
+       class="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 group transition-colors">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-red-500 text-xs flex-shrink-0"></span>
+        <span class="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 truncate">{{ drama.title }}</span>
+      </div>
+      <span class="px-2 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-full text-[10px] font-medium ml-2 whitespace-nowrap flex-shrink-0">{{ drama.episode }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+</div>
+
+<footer class="text-center text-[10px] text-gray-400 dark:text-gray-600 pb-3">
+  OppaDrama &copy; 2026 | Made with ♥ by VaL
 </footer>
+
+<!-- <footer class="mt-8 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
+  OppaDrama &copy; 2026 | Made with ♥ by VaL
+</footer> -->
 
 </div>
 
@@ -391,56 +245,53 @@
     }
   });
 
-  // Modal functionality untuk Sedang Tayang
-  const ongoingBtn = document.getElementById('ongoing-btn');
-  const ongoingModal = document.getElementById('ongoing-modal');
-  const closeModal = document.getElementById('close-modal');
 
-  ongoingBtn.addEventListener('click', () => {
-    ongoingModal.classList.remove('hidden');
-  });
-
-  closeModal.addEventListener('click', () => {
-    ongoingModal.classList.add('hidden');
-  });
-
-  // Close modal when clicking outside
-  ongoingModal.addEventListener('click', (e) => {
-    if (e.target === ongoingModal) {
-      ongoingModal.classList.add('hidden');
-    }
-  });
-
-  // Close modal with Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !ongoingModal.classList.contains('hidden')) {
-      ongoingModal.classList.add('hidden');
-    }
-  });
 
   // Dark mode functionality
+  function updateDarkIcon(isDark) {
+    document.getElementById('icon-moon').classList.toggle('hidden', isDark);
+    document.getElementById('icon-sun').classList.toggle('hidden', !isDark);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('toggle-dark');
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) {
       document.documentElement.classList.add('dark');
-      btn.textContent = '☀️';
     } else {
       document.documentElement.classList.remove('dark');
-      btn.textContent = '🌙';
     }
+    updateDarkIcon(isDark);
     
     btn.addEventListener('click', () => {
       document.documentElement.style.transition = 'background-color 0.3s ease, color 0.3s ease';
       document.documentElement.classList.toggle('dark');
-      if(document.documentElement.classList.contains('dark')){
-        localStorage.setItem('theme','dark');
-        btn.textContent = '☀️';
-      } else {
-        localStorage.setItem('theme','light');
-        btn.textContent = '🌙';
-      }
+      const nowDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+      updateDarkIcon(nowDark);
       setTimeout(() => { document.documentElement.style.transition = ''; }, 300);
     });
+  });
+</script>
+
+<!-- Scroll to Top -->
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+  class="fixed bottom-6 right-4 z-50 w-9 h-9 bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 hover:bg-red-700">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+  </svg>
+</button>
+
+<script>
+  const scrollTopBtn = document.getElementById('scroll-top');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+      scrollTopBtn.classList.remove('opacity-0', 'pointer-events-none');
+      scrollTopBtn.classList.add('opacity-100');
+    } else {
+      scrollTopBtn.classList.add('opacity-0', 'pointer-events-none');
+      scrollTopBtn.classList.remove('opacity-100');
+    }
   });
 </script>
 </body>

@@ -1,0 +1,16 @@
+/* Hover effect for drama cards */
+.group:hover .group-hover\:scale-105 {
+    transform: scale(1.05);
+}
+
+/* Custom scrollbar untuk dropdown */
+.dropdown-scroll::-webkit-scrollbar { width: 6px; }
+.dropdown-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+.dropdown-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.dark .dropdown-scroll::-webkit-scrollbar-track { background: #374151; }
+.dark .dropdown-scroll::-webkit-scrollbar-thumb { background: #6b7280; }
+
+/* Smooth image loading */
+img { transition: opacity 0.3s ease; }
+img[loading] { opacity: 0; }
+img.loaded { opacity: 1; }
