@@ -133,11 +133,11 @@
     <div class="flex flex-wrap items-center justify-between gap-2">
 
       <!-- Server Dropdown -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5">
         <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Server:</span>
         <div class="relative">
           <button type="button" id="server-dropdown-btn"
-                  class="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                  class="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-[11px] hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             <span id="selected-server">{{ detail.videos[0].provider if detail.videos else 'Default' }}</span>
             <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -156,16 +156,16 @@
             </div>
           </div>
         </div>
+
+        <!-- Semua Episode -->
+        {% if detail.series_link and not detail.is_movie and detail.is_episode %}
+        <a href="/drama?slug={{ detail.series_link }}"
+           class="flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-[11px] hover:bg-red-600 hover:text-white transition-colors whitespace-nowrap">
+          Semua Ep
+        </a>
+        {% endif %}
         <span class="text-[10px] text-green-500 font-medium" id="current-server">{{ detail.videos[0].provider if detail.videos else '' }}</span>
       </div>
-
-      <!-- Semua Episode -->
-      {% if detail.series_link and not detail.is_movie and detail.is_episode %}
-      <a href="/drama?slug={{ detail.series_link }}"
-         class="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs hover:bg-red-600 hover:text-white transition-colors font-medium whitespace-nowrap">
-        Semua Ep
-      </a>
-      {% endif %}
 
       <!-- Prev/Next Episode -->
       {% if detail.all_episodes and detail.all_episodes|length > 0 and detail.is_episode and detail.current_index >= 0 %}

@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-
-from flask import Flask, request, render_template, Response
+from flask import Flask, request, render_template, Response, jsonify
 import requests, math
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -10,14 +7,6 @@ from flask_caching import Cache
 import re
 
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
-
-@app.after_request
-def add_charset(response):
-    if response.content_type.startswith('text/html'):
-        response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
-    
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 300})
 BASE_URL = "http://45.11.57.199/"
 VERIFY_URL = "http://45.11.57.199/?verify_human=1"
@@ -658,6 +647,41 @@ def drama_detail_route():
 @app.route('/favicon.ico')
 def favicon():
     return '', 204
+
+@app.route("/suggest")
+@cache.cached(timeout=120, query_string=True)
+def suggest():
+    q = request.args.get("q", "").strip()
+    if len(q) < 2:
+        return jsonify([])
+    try:
+        url = f"{BASE_URL}/?s={q}"
+        r = safe_get(url, headers=HEADERS, timeout=4)
+        if not r or r.status_code != 200:
+            return jsonify([])
+        soup = BeautifulSoup(r.text, "html.parser")
+        results = []
+        for article in soup.select("article.bs")[:6]:
+            a = article.select_one("a.tip")
+            if not a: continue
+            title = a.get("title") or a.text.strip()
+            thumb = article.select_one("img")
+            eps = article.select_one(".epx")
+            status = article.select_one(".status")
+            slug = urlparse(a["href"]).path.lstrip("/")
+            eps_text = eps.text.strip() if eps else ""
+            if eps_text in ["Completed", "Ongoing", ""]:
+                eps_text = status.text.strip() if status else ""
+            results.append({
+                "title": title.strip(),
+                "eps": eps_text,
+                "thumb": thumb["src"] if thumb else "",
+                "link": slug,
+            })
+        return jsonify(results)
+    except Exception as e:
+        print(f"Suggest error: {e}")
+        return jsonify([])
 
 if __name__ == "__main__":
     app.run(debug=True)
