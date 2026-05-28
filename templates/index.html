@@ -1,5 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7Q4HGNP519"></script>
+
+<script>
+window.dataLayer = window.dataLayer || [];
+
+function gtag(){
+  dataLayer.push(arguments);
+}
+
+gtag('js', new Date());
+
+gtag('config', 'G-7Q4HGNP519');
+</script>
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -260,7 +274,7 @@
     <a href="/drama?slug={{ drama.link }}"
        class="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 group transition-colors">
       <div class="flex items-center gap-2 min-w-0">
-        <span class="text-red-500 text-xs flex-shrink-0"></span>
+        <span class="text-red-500 text-xs flex-shrink-0">🔺</span>
         <span class="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 truncate">{{ drama.title }}</span>
       </div>
       <span class="px-2 py-0.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-full text-[10px] font-medium ml-2 whitespace-nowrap flex-shrink-0">{{ drama.episode }}</span>
@@ -270,8 +284,10 @@
 </div>
 {% endif %}
 
-<footer class="mt-8 text-center text-xs text-gray-500 dark:text-gray-400 pb-4 transition-colors">
-  OppaDrama &copy; 2026 | Made with  by VaL
+</div>
+
+<footer class="text-center text-[10px] text-gray-400 dark:text-gray-600 pb-3">
+  OppaDrama &copy; 2026 | Made with ♥ by VaL
 </footer>
 
 </div>
