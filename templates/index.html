@@ -13,6 +13,7 @@ function gtag(){
 gtag('js', new Date());
 
 gtag('config', 'G-7Q4HGNP519');
+gtag('event', 'test_event');
 </script>
 <head>
     <meta charset="UTF-8" />
@@ -424,6 +425,8 @@ function trackDramaClick(title) {
     gtag('event', 'drama_click', {
       drama_title: title
     });
+
+    console.log("Drama Click:", title);
   }
 }
 </script>
