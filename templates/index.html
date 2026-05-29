@@ -202,7 +202,9 @@ gtag('config', 'G-7Q4HGNP519');
 
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow transition-all hover:shadow-lg flex flex-col overflow-hidden h-full group">
 
-    <a href="/drama?slug={{ drama.link }}" class="block relative overflow-hidden">
+    <a href="/drama?slug={{ drama.link }}"
+		class="block relative overflow-hidden"
+		onclick="trackDramaClick('{{ drama.title }}')">
       {% if drama.thumb %}
       <img src="{{ drama.thumb }}"
            alt="{{ drama.title }}"
@@ -226,7 +228,8 @@ gtag('config', 'G-7Q4HGNP519');
 
       <!-- Title -->
       <a href="/drama?slug={{ drama.link }}"
-         class="block text-[11px] font-medium leading-[1.25] hover:text-red-600 dark:hover:text-red-400 transition-colors min-h-[34px] overflow-hidden">
+			onclick="trackDramaClick('{{ drama.title }}')"
+			class="block text-[11px] font-medium leading-[1.25] hover:text-red-600 dark:hover:text-red-400 transition-colors min-h-[34px] overflow-hidden">
         <span class="line-clamp-2">{{ drama.title }}</span>
       </a>
 
@@ -415,5 +418,15 @@ if (searchInput) {
   });
 }
 </script>
+<script>
+function trackDramaClick(title) {
+  if (typeof gtag !== "undefined") {
+    gtag('event', 'drama_click', {
+      drama_title: title
+    });
+  }
+}
+</script>
+
 </body>
 </html>
