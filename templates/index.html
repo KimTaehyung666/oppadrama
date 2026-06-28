@@ -16,6 +16,14 @@ gtag('config', 'G-7Q4HGNP519');
 gtag('event', 'test_event');
 </script>
 <head>
+    <script>
+      var t = localStorage.getItem('theme');
+      if (t === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>{{ title }}</title>
@@ -23,7 +31,7 @@ gtag('event', 'test_event');
     <script src="https://cdn.tailwindcss.com?plugins=line-clamp"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <style>
-        body { font-family: 'Poppins', Arial, sans-serif; background:#0d1117; color:#e6edf3; }
+        body { font-family: 'Poppins', Arial, sans-serif; }
         html { transition: background-color 0.3s ease, color 0.3s ease; }
         
         /* Custom scrollbar untuk dropdown */
@@ -266,6 +274,10 @@ gtag('event', 'test_event');
   {% endif %}
 </div>
 
+
+
+
+
 <!-- Sedang Tayang Section -->
 {% if ongoing_dramas %}
 <div class="mt-8">
@@ -325,7 +337,7 @@ gtag('event', 'test_event');
 
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('toggle-dark');
-    const isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark = localStorage.getItem('theme') !== 'light';
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {

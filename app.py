@@ -8,8 +8,8 @@ import re
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 300})
-BASE_URL = "http://45.11.57.199/"
-VERIFY_URL = "http://45.11.57.199/?verify_human=1"
+BASE_URL = "http://45.11.57.192/"
+VERIFY_URL = "http://45.11.57.192/?verify_human=1"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 session = requests.Session()
@@ -78,13 +78,15 @@ def scrape_single_page(page_num):
             if title and eps and jam:
                 slug = urlparse(a["href"]).path.lstrip("/")
                 is_movie = is_movie_content(slug)
+                is_hot = bool(a.find("div", class_="hotbadge"))
                 dramas.append({
                     "title": title.strip(),
                     "eps": eps.text.strip(),
                     "jam": jam.text.strip(),
                     "thumb": thumb["src"] if thumb else "",
                     "link": slug,
-                    "type": "movie" if is_movie else "series"
+                    "type": "movie" if is_movie else "series",
+                    "hot": is_hot
                 })
         
         print(f"📄 Scraped page {page_num}: {len(dramas)} dramas")
@@ -315,6 +317,92 @@ def get_all_episodes_from_series(slug):
     try: episodes.sort(key=lambda x: int(x['num']) if x['num'].isdigit() else 0)
     except: pass
     return episodes
+
+@cache.memoize(timeout=300)
+def get_film_pilihan():
+    try:
+        r = safe_get(BASE_URL, headers=HEADERS, timeout=5)
+        if not r or r.status_code != 200: return []
+        soup = BeautifulSoup(r.text, "html.parser")
+        films = []
+        for article in soup.select("article.stylefor"):
+            a = article.select_one("a.tip, a[href]")
+            if not a: continue
+            title = a.get("title") or a.text.strip()
+            thumb = article.select_one("img")
+            slug = urlparse(a["href"]).path.lstrip("/")
+            films.append({
+                "title": title.strip(),
+                "thumb": thumb["src"] if thumb else "",
+                "link": slug,
+            })
+        return films[:8]
+    except Exception as e:
+        print(f"Film pilihan error: {e}")
+        return []
+
+@cache.memoize(timeout=300)
+def get_series_baru():
+    try:
+        r = safe_get(BASE_URL, headers=HEADERS, timeout=5)
+        if not r or r.status_code != 200: return []
+        soup = BeautifulSoup(r.text, "html.parser")
+        series = []
+        for li in soup.select(".serieslist ul li"):
+            a = li.select_one("a.series")
+            if not a: continue
+            title = a.text.strip()
+            thumb = li.select_one("img")
+            slug = urlparse(a["href"]).path.lstrip("/")
+            genres_el = li.select(".leftseries span a")
+            genres = [g.text.strip() for g in genres_el]
+            date_spans = li.select(".leftseries span")
+            date = date_spans[-1].text.strip() if date_spans else ""
+            series.append({
+                "title": title,
+                "thumb": thumb["src"] if thumb else "",
+                "link": slug,
+                "genres": genres[:3],
+                "date": date,
+            })
+        return series[:6]
+    except Exception as e:
+        print(f"Series baru error: {e}")
+        return []
+
+
+@cache.memoize(timeout=300)
+def scrape_movie_page(page=1):
+    """Scrape film dari /series/?type=Movie"""
+    try:
+        url = f"{BASE_URL}/series/?type=Movie&order=update&page={page}"
+        r = safe_get(url, headers=HEADERS, timeout=5)
+        if not r or r.status_code != 200: return [], 1
+        soup = BeautifulSoup(r.text, "html.parser")
+        dramas = []
+        for article in soup.select("article.bs"):
+            a = article.select_one("a.tip")
+            if not a: continue
+            title = a.get("title") or a.text.strip()
+            thumb = article.select_one("img")
+            eps = article.select_one(".epx")
+            jam = article.select_one(".timeago")
+            slug = urlparse(a["href"]).path.lstrip("/")
+            dramas.append({
+                "title": title.strip(),
+                "eps": eps.text.strip() if eps else "",
+                "jam": jam.text.strip() if jam else "",
+                "thumb": thumb["src"] if thumb else "",
+                "link": slug,
+                "type": "movie",
+                "hot": False
+            })
+        has_next = soup.select_one(".hpage a.r") is not None
+        total = 50 if has_next else page
+        return dramas, total
+    except Exception as e:
+        print(f"scrape_movie_page error: {e}")
+        return [], 1
 
 @cache.memoize(timeout=300)
 def get_ongoing_dramas():
@@ -566,6 +654,12 @@ def get_drama_detail(slug):
 def index():
     q = request.args.get("q", "").strip()
     page = int(request.args.get("page", 1))
+
+# FIX
+    film_page = int(request.args.get("film_page", 1))
+    film_total_pages = 1
+
+    filter_type = request.args.get("type", "all")
     filter_type = request.args.get("type", "all")
     country = request.args.get("country", "")
     category = request.args.get("category", "")
@@ -573,6 +667,8 @@ def index():
 
     # Get ongoing dramas
     ongoing_dramas = get_ongoing_dramas()
+    film_pilihan = get_film_pilihan() if page == 1 and not q and not country and not category else []
+    series_baru = get_series_baru() if page == 1 and not q and not country and not category else []
 
     dramas_paginated = []
     total_pages = 50
@@ -586,29 +682,7 @@ def index():
         total_pages = 1
         
     elif filter_type == "movie":
-        # FILM: Realistic - 2 page saja
-        if page == 1:
-            # Page 1: film dari page 1-2
-            dramas_paginated = []
-            for p in range(1, 3):
-                page_dramas = scrape_single_page(p)
-                movies = [d for d in page_dramas if d.get('type') == 'movie']
-                dramas_paginated.extend(movies)
-            dramas_paginated = dramas_paginated[:24]
-            total_pages = 2
-        elif page == 2:
-            # Page 2: film dari page 3-4
-            dramas_paginated = []
-            for p in range(3, 5):
-                page_dramas = scrape_single_page(p)
-                movies = [d for d in page_dramas if d.get('type') == 'movie']
-                dramas_paginated.extend(movies)
-            dramas_paginated = dramas_paginated[:24]
-            total_pages = 2
-        else:
-            # Page 3+: kosong
-            dramas_paginated = []
-            total_pages = 2
+        dramas_paginated, total_pages = scrape_movie_page(page)
         
         
         
@@ -634,6 +708,10 @@ def index():
                          countries=COUNTRIES,
                          categories=CATEGORIES,
                          ongoing_dramas=ongoing_dramas,
+                         film_pilihan=film_pilihan,
+                         series_baru=series_baru,
+                         film_page=film_page,
+                         film_total_pages=film_total_pages,
                          title="OppaDrama")
 
 @app.route("/drama")
@@ -647,6 +725,34 @@ def drama_detail_route():
 @app.route('/favicon.ico')
 def favicon():
     return '', 204
+
+@app.route('/az')
+def az_list():
+    letter = request.args.get('show', 'A').upper()
+    try:
+        url = f"{BASE_URL}/az-lists/?show={letter}"
+        r = safe_get(url, headers=HEADERS, timeout=5)
+        if not r or r.status_code != 200:
+            return render_template("az.html", letter=letter, dramas=[], letters=list('#0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+        soup = BeautifulSoup(r.text, "html.parser")
+        dramas = []
+        for article in soup.select("article.bs, .listupd .bs"):
+            a = article.select_one("a.tip, a[href]")
+            if not a: continue
+            title = a.get("title") or a.text.strip()
+            thumb = article.select_one("img")
+            eps = article.select_one(".epx")
+            slug = urlparse(a["href"]).path.lstrip("/")
+            dramas.append({
+                "title": title.strip(),
+                "eps": eps.text.strip() if eps else "",
+                "thumb": thumb["src"] if thumb else "",
+                "link": slug,
+            })
+        return render_template("az.html", letter=letter, dramas=dramas, letters=list('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+    except Exception as e:
+        print(f"AZ error: {e}")
+        return render_template("az.html", letter=letter, dramas=[], letters=list('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
 
 @app.route("/suggest")
 @cache.cached(timeout=120, query_string=True)
@@ -682,6 +788,8 @@ def suggest():
     except Exception as e:
         print(f"Suggest error: {e}")
         return jsonify([])
+        
 
+    
 if __name__ == "__main__":
     app.run(debug=True)
