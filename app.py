@@ -58,6 +58,21 @@ CATEGORIES = {
     'animation': 'Animasi'
 }
 
+GENRES = {
+    'action': 'Action',
+    'adventure': 'Adventure',
+    'animation': 'Animation',
+    'anime': 'Anime',
+    'comedy': 'Comedy',
+    'drama': 'Drama',
+    'fantasy-epic': 'Fantasy',
+    'isekai': 'Isekai',
+    'mystery': 'Mystery',
+    'psychological': 'Psychological',
+    'romance': 'Romance',
+    'sci-fi': 'Sci-Fi'
+}
+
 @cache.memoize(timeout=300)
 def scrape_single_page(page_num):
     """Scrape SINGLE PAGE saja - sangat ringan"""
@@ -183,11 +198,19 @@ def scrape_series_only(page_num):
     return dramas
 
 @cache.memoize(timeout=300)
-def scrape_filtered_page(page_num, country=None, category=None):
+def scrape_filtered_page(page_num, country=None, category=None, genre=None, status=None):
     """Scrape SINGLE PAGE untuk filter"""
     params = {}
-    
-    if country and category:
+
+    if genre:
+        if page_num == 1:
+            url = f"{BASE_URL}/genres/{genre}/"
+        else:
+            url = f"{BASE_URL}/genres/{genre}/page/{page_num}/"
+    elif status:
+        url = f"{BASE_URL}/series/"
+        params = {'status': status, 'type': '', 'order': 'update', 'page': page_num}
+    elif country and category:
         url = f"{BASE_URL}/series/"
         params = {
             'country[]': country,
@@ -660,21 +683,24 @@ def index():
     film_total_pages = 1
 
     filter_type = request.args.get("type", "all")
-    filter_type = request.args.get("type", "all")
     country = request.args.get("country", "")
     category = request.args.get("category", "")
+    genre = request.args.get("genre", "")
+    status = request.args.get("status", "")
     per_page = 24
+
+    has_filter = bool(country or category or genre or status)
 
     # Get ongoing dramas
     ongoing_dramas = get_ongoing_dramas()
-    film_pilihan = get_film_pilihan() if page == 1 and not q and not country and not category else []
-    series_baru = get_series_baru() if page == 1 and not q and not country and not category else []
+    film_pilihan = get_film_pilihan() if page == 1 and not q and not has_filter else []
+    series_baru = get_series_baru() if page == 1 and not q and not has_filter else []
 
     dramas_paginated = []
     total_pages = 50
 
-    if country or category:
-        dramas_paginated = scrape_filtered_page(page, country, category)
+    if has_filter:
+        dramas_paginated = scrape_filtered_page(page, country, category, genre, status)
         total_pages = 20
         
     elif q:
@@ -705,8 +731,11 @@ def index():
                          pages=total_pages,
                          country=country,
                          category=category,
+                         genre=genre,
+                         status=status,
                          countries=COUNTRIES,
                          categories=CATEGORIES,
+                         genres=GENRES,
                          ongoing_dramas=ongoing_dramas,
                          film_pilihan=film_pilihan,
                          series_baru=series_baru,
@@ -733,7 +762,7 @@ def az_list():
         url = f"{BASE_URL}/az-lists/?show={letter}"
         r = safe_get(url, headers=HEADERS, timeout=5)
         if not r or r.status_code != 200:
-            return render_template("az.html", letter=letter, dramas=[], letters=list('#0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+            return render_template("az.html", letter=letter, dramas=[], letters=list('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
         soup = BeautifulSoup(r.text, "html.parser")
         dramas = []
         for article in soup.select("article.bs, .listupd .bs"):
