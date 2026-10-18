@@ -8,21 +8,24 @@ import re
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'simple', 'CACHE_DEFAULT_TIMEOUT': 300})
-BASE_URL = "http://45.11.57.192/"
-VERIFY_URL = "http://45.11.57.192/?verify_human=1"
+BASE_URL = "http://212.86.121.175/"
+VERIFY_URL = BASE_URL + "?verify_human=1"
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 session = requests.Session()
 
 def safe_get(url, params=None, headers=None, timeout=5, **kwargs):
+    # bypass verify dulu — tapi JANGAN bikin request utama gagal kalau verify-nya mati
     try:
-        # bypass verify dulu
         session.get(
             VERIFY_URL,
             headers=HEADERS,
             timeout=5
         )
+    except Exception as e:
+        print(f"⚠️ Verify dilewati: {e}")
 
+    try:
         # request target
         return session.get(
             url,
@@ -269,6 +272,8 @@ def search_drama(query):
     """Search drama - 1 page saja"""
     url = f"{BASE_URL}/?s={query}"
     r = safe_get(url, headers=HEADERS, timeout=5)
+    if not r or r.status_code != 200:
+        return []
     soup = BeautifulSoup(r.text, "html.parser")
     results = []
     for article in soup.select("article.bs"):
@@ -372,9 +377,13 @@ def get_series_baru():
         soup = BeautifulSoup(r.text, "html.parser")
         series = []
         for li in soup.select(".serieslist ul li"):
-            a = li.select_one("a.series")
+            a = li.select_one(".leftseries h4 a") or li.select_one("a.series")
             if not a: continue
-            title = a.text.strip()
+            title = a.get("title") or a.text.strip()
+            if not title:
+                img_alt = li.select_one("img")
+                title = img_alt.get("alt", "").strip() if img_alt else ""
+            if not title: continue
             thumb = li.select_one("img")
             slug = urlparse(a["href"]).path.lstrip("/")
             genres_el = li.select(".leftseries span a")
