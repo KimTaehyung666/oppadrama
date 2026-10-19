@@ -11,7 +11,7 @@
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }}</title>
 <script src="https://cdn.tailwindcss.com?plugins=line-clamp"></script>
 <script>tailwind.config={darkMode:'class'}</script>
@@ -331,6 +331,9 @@ function toggleSinopsis() {
 const searchInput = document.getElementById('search-input');
 const suggestDrop = document.getElementById('suggest-dropdown');
 let suggestTimer = null;
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 if (searchInput) {
   searchInput.addEventListener('input', () => {
     const q = searchInput.value.trim();
@@ -344,10 +347,10 @@ if (searchInput) {
         const data = await res.json();
         if (!data.length) { suggestDrop.innerHTML = '<div class="suggest-loading">Tidak ditemukan</div>'; return; }
         suggestDrop.innerHTML = data.map(d => `
-          <a class="suggest-item" href="/drama?slug=${d.link}">
-            <img src="${d.thumb}" alt="${d.title}" onerror="this.style.display='none'">
-            <span class="s-title">${d.title}</span>
-            <span class="s-eps">${d.eps}</span>
+          <a class="suggest-item" href="/drama?slug=${esc(d.link)}">
+            <img src="${esc(d.thumb)}" alt="${esc(d.title)}" onerror="this.style.display='none'">
+            <span class="s-title">${esc(d.title)}</span>
+            <span class="s-eps">${esc(d.eps)}</span>
           </a>
         `).join('');
       } catch(e) { suggestDrop.style.display = 'none'; }
