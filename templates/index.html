@@ -232,7 +232,7 @@ gtag('config', 'G-7Q4HGNP519');
 </header>
 
 <!-- Grid Drama -->
-<div class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2">
+<div class="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
 
   {% for drama in dramas %}
 
@@ -310,56 +310,6 @@ gtag('config', 'G-7Q4HGNP519');
 
 
 
-
-<!-- Film Pilihan -->
-{% if film_pilihan %}
-<div class="mt-6">
-  <div class="flex items-center gap-2 mb-2.5">
-    <div class="w-2 h-2 bg-red-500 rounded-full"></div>
-    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Film Pilihan</h2>
-  </div>
-  <div class="flex gap-2.5 overflow-x-auto no-scrollbar snap-x pb-1 -mx-4 px-4">
-    {% for f in film_pilihan %}
-    <a href="/drama?slug={{ f.link }}" onclick="trackDramaClick('{{ f.title }}')"
-       class="snap-start flex-shrink-0 w-28 md:w-36 group">
-      <div class="relative overflow-hidden rounded-lg shadow">
-        {% if f.thumb %}
-        <img src="{{ f.thumb }}" alt="{{ f.title }}" loading="lazy"
-             class="w-full aspect-[2/3] object-cover transition-transform duration-300 group-hover:scale-105" />
-        {% endif %}
-      </div>
-      <p class="mt-1.5 text-[11px] font-medium leading-tight line-clamp-2 text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{{ f.title }}</p>
-    </a>
-    {% endfor %}
-  </div>
-</div>
-{% endif %}
-
-<!-- Series Baru -->
-{% if series_baru %}
-<div class="mt-6">
-  <div class="flex items-center gap-2 mb-2.5">
-    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Series Baru</h2>
-  </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-    {% for s in series_baru %}
-    <a href="/drama?slug={{ s.link }}" onclick="trackDramaClick('{{ s.title }}')"
-       class="flex items-center gap-2.5 px-2.5 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 group transition-colors">
-      {% if s.thumb %}
-      <img src="{{ s.thumb }}" alt="{{ s.title }}" loading="lazy"
-           class="w-10 h-14 object-cover rounded flex-shrink-0" />
-      {% endif %}
-      <div class="min-w-0 flex-1">
-        <p class="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 truncate transition-colors">{{ s.title }}</p>
-        <p class="text-[10px] text-gray-400 truncate mt-0.5">{{ s.genres|join(', ') }}{% if s.date %} · {{ s.date }}{% endif %}</p>
-      </div>
-      <span class="text-red-500 text-xs flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">›</span>
-    </a>
-    {% endfor %}
-  </div>
-</div>
-{% endif %}
 
 <!-- Sedang Tayang Section -->
 {% if ongoing_dramas %}

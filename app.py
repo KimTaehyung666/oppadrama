@@ -702,8 +702,6 @@ def index():
 
     # Get ongoing dramas
     ongoing_dramas = get_ongoing_dramas()
-    film_pilihan = get_film_pilihan() if page == 1 and not q and not has_filter else []
-    series_baru = get_series_baru() if page == 1 and not q and not has_filter else []
 
     dramas_paginated = []
     total_pages = 50
@@ -746,8 +744,6 @@ def index():
                          categories=CATEGORIES,
                          genres=GENRES,
                          ongoing_dramas=ongoing_dramas,
-                         film_pilihan=film_pilihan,
-                         series_baru=series_baru,
                          film_page=film_page,
                          film_total_pages=film_total_pages,
                          title="OppaDrama")
