@@ -746,7 +746,7 @@ def index():
                          ongoing_dramas=ongoing_dramas,
                          film_page=film_page,
                          film_total_pages=film_total_pages,
-                         title="OppaDrama")
+                         title="KitaDrama")
 
 @app.route("/drama")
 def drama_detail_route():
