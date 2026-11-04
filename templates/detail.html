@@ -307,25 +307,12 @@ if (serverBtn) {
 function switchVideo(btn) {
   const url = btn.getAttribute('data-url');
   const provider = btn.getAttribute('data-provider');
-  const player = document.getElementById('player');
-  // Server EarnVids (Origin/FileLions) memblokir embed berdasarkan referrer
-  // domain situs ini; khusus server itu referrer jangan dikirim.
-  player.referrerPolicy = /morencius\.|embedorigin\.|earnvids|filelions/i.test(url) ? 'no-referrer' : '';
-  player.src = url;
+  document.getElementById('player').src = url;
   document.getElementById('selected-server').textContent = provider;
   document.getElementById('current-server').textContent = provider;
   serverDrop.classList.add('hidden');
   serverBtn.querySelector('svg').classList.remove('rotate-180');
 }
-
-// Terapkan aturan referrer yang sama bila server awal ternyata EarnVids
-(function() {
-  const p = document.getElementById('player');
-  if (p && /morencius\.|embedorigin\.|earnvids|filelions/i.test(p.src)) {
-    p.referrerPolicy = 'no-referrer';
-    p.src = p.src;
-  }
-})();
 
 // Sinopsis toggle
 function toggleSinopsis() {
